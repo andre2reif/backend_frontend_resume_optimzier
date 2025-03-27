@@ -1,6 +1,6 @@
 import json
-from config import COVERLETTER_SCHEMA  # Verwende hier das Schema für Cover Letters
-from utils.prompts import system_prompt_coverletter_optimize  # Wir definieren einen speziellen System-Prompt
+from app.core.config import COVERLETTER_SCHEMA  # oder SCHEMAS["coverletter"]
+from app.utils.prompts import system_prompt_coverletter_optimize  # Wir definieren einen speziellen System-Prompt
 
 def get_prompt_messages(coverletter_content: dict, job_description: dict, improvement_suggestions: dict, language: str = "en") -> list:
     """

@@ -1,5 +1,5 @@
 import json
-from config import JOBDESCRIPTION_SCHEMA  # oder SCHEMAS["resume"]
+from app.core.config import JOBDESCRIPTION_SCHEMA  # oder SCHEMAS["jobdescription"]
 
 def get_prompt_messages(resume_content: dict, language: str = "en") -> list:
     structure = JOBDESCRIPTION_SCHEMA
@@ -83,14 +83,14 @@ def get_prompt_messages(resume_content: dict, language: str = "en") -> list:
                   - salary_range
                   - job_overview
                   - obowiązki (lista)
-                  - umiejętności (obiekt z „hard_skills” i „soft_skills”)
+                  - umiejętności (obiekt z "hard_skills" i "soft_skills")
                   - benefity (lista)
                   - application_process (obiekt)
                   - additional_information
 
-                3. w przypadku „umiejętności” należy rozróżnić między „hard_skills” i „soft_skills”. 
-                  Dla każdej umiejętności należy również wprowadzić „importance_level”. 
-                  Możliwe wartości: „must_have” lub „recommended”.
+                3. w przypadku "umiejętności" należy rozróżnić między "hard_skills" i "soft_skills". 
+                  Dla każdej umiejętności należy również wprowadzić "importance_level". 
+                  Możliwe wartości: "must_have" lub "recommended".
 
                 4. Upewnij się, że wypełniłeś wszystkie pola, nawet jeśli niektóre z nich pozostały puste. 
                   Wyprowadź tylko czysty obiekt JSON. 

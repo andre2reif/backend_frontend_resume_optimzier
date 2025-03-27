@@ -1,4 +1,5 @@
 import json
+from app.core.config import COVERLETTER_SCHEMA  # oder SCHEMAS["coverletter"]
 
 def get_prompt_messages(resume_content: dict, language: str = "en") -> list:
     structure = """

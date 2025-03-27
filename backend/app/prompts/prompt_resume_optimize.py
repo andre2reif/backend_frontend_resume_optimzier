@@ -1,6 +1,6 @@
 import json
-from config import RESUME_SCHEMA  # oder SCHEMAS["resume"]
-from utils.prompts import system_prompt_resume_analysis_before_optimize
+from app.core.config import RESUME_SCHEMA  # oder SCHEMAS["resume"]
+from app.utils.prompts import system_prompt_resume_analysis_before_optimize
 
 def get_prompt_messages(
     resume_content: dict,

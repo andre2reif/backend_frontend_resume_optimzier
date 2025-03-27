@@ -1,5 +1,5 @@
 import json
-from config import RESUME_SCHEMA  # oder SCHEMAS["resume"]
+from app.core.config import RESUME_SCHEMA  # oder SCHEMAS["resume"]
 
 def get_prompt_messages(resume_content: dict, language: str = "en") -> list:
     structure = RESUME_SCHEMA  # oder SCHEMAS["resume"]

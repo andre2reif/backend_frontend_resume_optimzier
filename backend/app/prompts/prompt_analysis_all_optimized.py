@@ -1,8 +1,8 @@
 import json
-from config import ANALYSIS_SCHEMA, COVERLETTER_ANALYSIS_SCHEMA  # oder SCHEMAS["resume"]
-from utils.resume_formatter import simplify_optimized_resume
-from utils.prompts import system_prompt_resume_coverletter_analysis_after_optimize_part_resume
-from utils.prompts import system_prompt_resume_coverletter_analysis_after_optimize_part_coverletter
+from app.core.config import RESUME_SCHEMA, COVERLETTER_SCHEMA  # oder SCHEMAS["resume"], SCHEMAS["coverletter"]
+from app.utils.resume_formatter import simplify_optimized_resume
+from app.utils.prompts import system_prompt_resume_coverletter_analysis_after_optimize_part_resume
+from app.utils.prompts import system_prompt_resume_coverletter_analysis_after_optimize_part_coverletter
 
 def get_prompt_messages_optimized_resume(job_description: dict,
                        cover_letter: dict,
@@ -23,7 +23,7 @@ def get_prompt_messages_optimized_resume(job_description: dict,
     # ----------------------------------------------------
     # 1) Definiere unsere Ziel-Ausgabe-Struktur als String
     # ----------------------------------------------------
-    structure = ANALYSIS_SCHEMA.strip()
+    structure = RESUME_SCHEMA.strip()
 
     # -----------------------------------------------
     # 2) JSON-Dumps für JobDescription / CoverLetter / Resume
@@ -132,7 +132,7 @@ def get_prompt_messages_optimized_coverletter(job_description: dict,
     # ----------------------------------------------------
     # 1) Definiere unsere Ziel-Ausgabe-Struktur als String
     # ----------------------------------------------------
-    structure = COVERLETTER_ANALYSIS_SCHEMA.strip()
+    structure = COVERLETTER_SCHEMA.strip()
 
     # -----------------------------------------------
     # 2) JSON-Dumps für JobDescription / CoverLetter / Resume

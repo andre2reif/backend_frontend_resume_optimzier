@@ -13,19 +13,19 @@ from app.routers import resume, coverletter, jobdescription, analysis
 from app.core.config import OPENAI_MODEL
 
 # Eigene Prompt-Funktionen importieren
-from prompt_resume import get_prompt_messages as get_prompt_messages_resume
-from prompt_coverletter import get_prompt_messages as get_prompt_messages_coverletter
-from prompt_jobdescription import get_prompt_messages as get_prompt_messages_jobdescription
-from prompt_analysis import get_prompt_messages as get_prompt_messages_analysis
+from app.prompts.prompt_resume import get_prompt_messages as get_prompt_messages_resume
+from app.prompts.prompt_coverletter import get_prompt_messages as get_prompt_messages_coverletter
+from app.prompts.prompt_jobdescription import get_prompt_messages as get_prompt_messages_jobdescription
+from app.prompts.prompt_analysis import get_prompt_messages as get_prompt_messages_analysis
 
-from prompt_resume_optimize import get_prompt_messages as get_prompt_messages_resume_optimize
-from prompt_analysis_optimized import get_prompt_messages as get_prompt_messages_analysis_optimized
+from app.prompts.prompt_resume_optimize import get_prompt_messages as get_prompt_messages_resume_optimize
+from app.prompts.prompt_analysis_optimized import get_prompt_messages as get_prompt_messages_analysis_optimized
 
-from prompt_coverletter_analysis import get_prompt_messages as get_prompt_messages_coverletter_analysis
-from prompt_coverletter_optimize import get_prompt_messages as get_prompt_messages_coverletter_optimize
+from app.prompts.prompt_coverletter_analysis import get_prompt_messages as get_prompt_messages_coverletter_analysis
+from app.prompts.prompt_coverletter_optimize import get_prompt_messages as get_prompt_messages_coverletter_optimize
 
-from prompt_analysis_all_optimized import get_prompt_messages_optimized_resume 
-from prompt_analysis_all_optimized import get_prompt_messages_optimized_coverletter 
+from app.prompts.prompt_analysis_all_optimized import get_prompt_messages_optimized_resume 
+from app.prompts.prompt_analysis_all_optimized import get_prompt_messages_optimized_coverletter 
 load_dotenv()
 
 
@@ -75,16 +75,6 @@ app.include_router(coverletter.router, prefix="/coverletter", tags=["Cover Lette
 app.include_router(jobdescription.router, prefix="/jobdescription", tags=["Job Description"])
 app.include_router(analysis.router, prefix="/analysis", tags=["Analysis"])
 
-def count_tokens(text: str, model: str = "gpt-4") -> int:
-    """Hilfsfunktion zur Ermittlung der Token-Anzahl im gegebenen Text."""
-    try:
-        encoding = tiktoken.encoding_for_model(model)
-    except KeyError:
-        encoding = tiktoken.get_encoding("cl100k_base")
-    return len(encoding.encode(text))
-
-
-# Lese-API-Endpunkte zum Zählen der Dokumente
 def count_documents(collection):
     return collection.count_documents({})
 

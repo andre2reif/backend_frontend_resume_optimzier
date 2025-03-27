@@ -1,7 +1,7 @@
 import json
-from config import ANALYSIS_SCHEMA
-from utils.resume_formatter import simplify_optimized_resume
-from utils.prompts import system_prompt_resume_analysis_after_optimize
+from app.core.config import ANALYSIS_SCHEMA
+from app.utils.resume_formatter import simplify_optimized_resume
+from app.utils.prompts import system_prompt_resume_analysis_after_optimize
 
 def get_prompt_messages(job_description: dict,
                         cover_letter: dict,

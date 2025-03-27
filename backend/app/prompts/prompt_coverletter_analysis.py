@@ -1,6 +1,6 @@
 import json
-from config import COVERLETTER_ANALYSIS_SCHEMA
-from utils.prompts import system_prompt_coverletter_analysis
+from app.core.config import COVERLETTER_ANALYSIS_SCHEMA
+from app.utils.prompts import system_prompt_coverletter_analysis
 
 # ------------------------
 # Funktion zur Erstellung des vollständigen Prompts für die Analyse des Anschreibens

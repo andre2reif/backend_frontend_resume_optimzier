@@ -1,5 +1,5 @@
 import json
-from config import ANALYSIS_SCHEMA  # oder SCHEMAS["resume"]
+from app.core.config import ANALYSIS_SCHEMA  # oder SCHEMAS["analysis"]
 
 def get_prompt_messages(job_description: dict,
                        cover_letter: dict,
