@@ -6,11 +6,11 @@ import os
 import json
 from dotenv import load_dotenv
 from openai import OpenAI
-import tiktoken
 import certifi
 from datetime import datetime
-from app.routers import resume, coverletter, jobdescription, analysis
-from app.core.config import OPENAI_MODEL
+from app.routers import resume, coverletter, jobdescription, analysis, coverletter_analysis
+from app.core.config import settings
+from fastapi.middleware.cors import CORSMiddleware
 
 # Eigene Prompt-Funktionen importieren
 from app.prompts.prompt_resume import get_prompt_messages as get_prompt_messages_resume
@@ -26,6 +26,8 @@ from app.prompts.prompt_coverletter_optimize import get_prompt_messages as get_p
 
 from app.prompts.prompt_analysis_all_optimized import get_prompt_messages_optimized_resume 
 from app.prompts.prompt_analysis_all_optimized import get_prompt_messages_optimized_coverletter 
+from app.prompts.prompt_coverletter_optimize import get_prompt_messages as get_prompt_messages_coverletter_optimize
+
 load_dotenv()
 
 
@@ -53,27 +55,28 @@ collection_jobdesc = db_jobdesc["jobPostings"]
 db_analysis = client_db["analysis_db"]
 collection_analysis = db_analysis["analysis"]
 
-OPENAI_MODEL = os.getenv("OPENAI_MODEL")
-if not OPENAI_MODEL:
-    raise ValueError("OPENAI_MODEL is not set. Check your .env file.")
-
-MAX_TOKENS = 12000
-
 app = FastAPI(
-    title="CV Analysis API",
-    description="API für die Analyse und Optimierung von Lebensläufen und Anschreiben",
-    version="1.0.0"
+    title=settings.PROJECT_NAME,
+    description=settings.PROJECT_DESCRIPTION,
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# Überprüfe, ob OPENAI_MODEL gesetzt ist
-if not OPENAI_MODEL:
-    raise ValueError("OPENAI_MODEL is not set. Check your .env file.")
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Router einbinden
-app.include_router(resume.router, prefix="/resume", tags=["Resume"])
-app.include_router(coverletter.router, prefix="/coverletter", tags=["Cover Letter"])
-app.include_router(jobdescription.router, prefix="/jobdescription", tags=["Job Description"])
-app.include_router(analysis.router, prefix="/analysis", tags=["Analysis"])
+app.include_router(resume.router, prefix=settings.API_V1_STR)
+app.include_router(coverletter.router, prefix=settings.API_V1_STR)
+app.include_router(jobdescription.router, prefix=settings.API_V1_STR)
+app.include_router(analysis.router, prefix=settings.API_V1_STR)
+app.include_router(coverletter_analysis.router, prefix=settings.API_V1_STR)
 
 def count_documents(collection):
     return collection.count_documents({})
@@ -238,18 +241,18 @@ async def extract_structured_document(
             "result": doc.get(structured_key)
         }
 
-    token_count = count_tokens(raw_text, OPENAI_MODEL)
-    if token_count > MAX_TOKENS:
+    token_count = count_tokens(raw_text, settings.OPENAI_MODEL)
+    if token_count > settings.MAX_TOKENS:
         raise HTTPException(
             status_code=400,
-            detail=f"Document is too long: {token_count} tokens. Max allowed: {MAX_TOKENS}"
+            detail=f"Document is too long: {token_count} tokens. Max allowed: {settings.MAX_TOKENS}"
         )
 
     messages = prompt_func(raw_text, language)
 
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=messages,
             temperature=0.3,
             response_format={"type": "json_object"}
@@ -293,11 +296,10 @@ async def analysis_ats(
     coverletter_id: str = Query(..., description="MongoDB _id of the cover letter"),
     jobdescription_id: str = Query(..., description="MongoDB _id of the job description"),
     language: str = Query("de", description="Target language: en, de, pl"),
-    use_optimized_resume: bool = Query(False, description="Set to true to use optimized_resume instead of structured_resume"),
-    use_optimized_coverletter: bool = Query(False, description="Set to true to use optimized_coverletter instead of structured_coverletter"),
-    update_existing_analysis_id: str = Query(None, description="If set, update this analysisId instead of creating new one"),
-    user_id: str = Query(..., description="User ID (as string) to restrict access")
-
+    use_optimized_resume: bool = Query(False, description="Wenn true, wird der optimierte Lebenslauf verwendet, sonst der strukturierte"),
+    use_optimized_coverletter: bool = Query(False, description="Wenn true, wird das optimierte Anschreiben verwendet, sonst das strukturierte"),
+    update_existing_analysis_id: str = Query(None, description="Wenn gesetzt, wird das bestehende Analyse-Dokument aktualisiert"),
+    user_id: str = Query(..., description="User ID (als String) zur Zugriffsbeschränkung")
 ):
     """
     Führt eine kombinierte ATS-Analyse durch, die den Lebenslauf (optimiert oder strukturiert),
@@ -305,18 +307,20 @@ async def analysis_ats(
     Analyse des Anschreibens (Cover Letter) vorgenommen.
     
     Parameter:
-      - resume_id: MongoDB _id des Lebenslaufs.
-      - coverletter_id: MongoDB _id des Anschreibens.
-      - jobdescription_id: MongoDB _id der Stellenbeschreibung.
-      - language: Zielsprache ("en", "de", "pl").
-      - use_optimized_resume: Wenn true, wird der optimierte Lebenslauf verwendet.
-      - update_existing_analysis_id: Falls gesetzt, wird das bestehende Analyse-Dokument aktualisiert.
+      - resume_id: MongoDB _id des Lebenslaufs
+      - coverletter_id: MongoDB _id des Anschreibens
+      - jobdescription_id: MongoDB _id der Stellenbeschreibung
+      - language: Zielsprache ("en", "de", "pl")
+      - use_optimized_resume: Wenn true, wird der optimierte Lebenslauf verwendet, sonst der strukturierte
+      - use_optimized_coverletter: Wenn true, wird das optimierte Anschreiben verwendet, sonst das strukturierte
+      - update_existing_analysis_id: Falls gesetzt, wird das bestehende Analyse-Dokument aktualisiert
+      - user_id: User ID zur Zugriffsbeschränkung
     
-      http://127.0.0.1:8000/analysis-ats?resume_id=67e2bfb64a73a557d0035844&coverletter_id=67e2bf3030e88d7728f5b057&jobdescription_id=67e2bf5403d2f0385ecbe633&language=de&use_optimized_resume=true&update_existing_analysis_id=67e2c256ed0b3455107e49a5
-      http://127.0.0.1:8000/analysis-ats?resume_id=67e2bfb64a73a557d0035844&coverletter_id=67e2bf3030e88d7728f5b057&jobdescription_id=67e2bf5403d2f0385ecbe633&language=de
+    Beispiel-URL:
+      http://127.0.0.1:8001/analysis-ats?resume_id=67e40d4c4bd9b5794700d344&coverletter_id=67e40d2b3f102d51c7610c92&jobdescription_id=67e40d3d94e6433545a608dd&language=de&use_optimized_resume=false&use_optimized_coverletter=false&user_id=fff3a8923a9c3b6e12345678
 
     Rückgabe:
-      JSON mit "analysis_id", "status" und "analysisResult" (mit den Schlüsseln "ats_analysis" und "coverletter_analysis").
+      JSON mit "analysis_id", "status" und "analysisResult" (mit den Schlüsseln "ats_analysis" und "coverletter_analysis")
     """
     # Dokumente laden
     resume_doc = collection_resume.find_one({"_id": ObjectId(resume_id)})
@@ -358,7 +362,7 @@ async def analysis_ats(
     )
     try:
         ats_response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=ats_messages,
             temperature=0.0,
             response_format={"type": "json_object"}
@@ -382,7 +386,7 @@ async def analysis_ats(
     )
     try:
         cl_response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=cl_messages,
             temperature=0.7,
             response_format={"type": "json_object"}
@@ -440,12 +444,12 @@ async def analysis_ats(
         "status": overall_status,
         "analysisResult": combined_analysis
     }
+
 # ########################################
 # ## ATS Analyse (Resume + Coverletter) ##
 # ########################################
 @app.get("/analysis-ats_optimized")
 async def analysis_ats_optimized(
-
     resume_id: str = Query(..., description="MongoDB _id of the resume"),
     coverletter_id: str = Query(..., description="MongoDB _id of the cover letter"),
     jobdescription_id: str = Query(..., description="MongoDB _id of the job description"),
@@ -518,7 +522,7 @@ async def analysis_ats_optimized(
     )
     try:
         ats_response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=ats_messages,
             temperature=0.0,
             response_format={"type": "json_object"}
@@ -542,7 +546,7 @@ async def analysis_ats_optimized(
     )
     try:
         cl_response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=cl_messages,
             temperature=0.7,
             response_format={"type": "json_object"}
@@ -633,7 +637,7 @@ async def analysis_coverletter(
     messages = get_prompt_messages_coverletter_analysis(structured_coverletter, structured_jobdesc, language)
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=messages,
             temperature=0.7,
             response_format={"type": "json_object"}
@@ -748,7 +752,7 @@ async def optimize_resume_from_analysis(
 
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=messages,
             temperature=0.2,
             response_format={"type": "json_object"}
@@ -847,7 +851,6 @@ async def optimize_coverletter_from_analysis(
         raise HTTPException(status_code=400, detail="Job description has not been structured yet. Use /extract-structured-document first.")
 
     # 6. Prompt erstellen und an OpenAI senden
-    from prompt_coverletter_optimize import get_prompt_messages as get_prompt_messages_coverletter_optimize
     messages = get_prompt_messages_coverletter_optimize(
         coverletter_content=structured_coverletter,
         job_description=structured_jobdesc,
@@ -857,7 +860,7 @@ async def optimize_coverletter_from_analysis(
 
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=messages,
             temperature=0.2,
             response_format={"type": "json_object"}
@@ -952,7 +955,7 @@ async def analysis_ats_optimized(
 
     try:
         response = client.chat.completions.create(
-            model=OPENAI_MODEL,
+            model=settings.OPENAI_MODEL,
             messages=messages,
             temperature=0.0,
             response_format={"type": "json_object"}
@@ -1010,8 +1013,9 @@ async def analysis_ats_optimized(
 @app.get("/")
 async def root():
     return {
-        "message": "Welcome to the CV Analysis API",
-        "version": "1.0.0",
+        "message": "Welcome to the Resume Optimizer API",
+        "version": settings.VERSION,
         "docs_url": "/docs",
-        "redoc_url": "/redoc"
+        "redoc_url": "/redoc",
+        "openapi_url": f"{settings.API_V1_STR}/openapi.json"
     }

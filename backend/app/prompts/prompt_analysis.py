@@ -50,7 +50,7 @@ def get_prompt_messages(job_description: dict,
             4) Make concrete suggestions for improvement, divided into resume_suggestions, coverletter_suggestions and overall_suggestions.
             5) Create a summary in at least 3-5 sentences.
 
-            Use only the following JSON structure, without any changes in the naming:
+            IMPORTANT: You must return ONLY a valid JSON object that exactly matches the following structure, without any additional text or explanation:
             '''
             ),
         "de": (
@@ -69,7 +69,7 @@ def get_prompt_messages(job_description: dict,
             4) Mach konkrete Verbesserungsvorschläge, aufgeteilt in resume_suggestions, coverletter_suggestions und overall_suggestions.
             5) Erstelle eine Zusammenfassung in mindestens 3–5 Sätzen.
 
-            Nutze ausschließlich folgende JSON-Struktur, ohne Änderungen in der Namensgebung:
+            WICHTIG: Du musst NUR ein gültiges JSON-Objekt zurückgeben, das exakt der folgenden Struktur entspricht, ohne zusätzlichen Text oder Erklärungen:
             '''
         ),
         "pl": (
@@ -88,7 +88,7 @@ def get_prompt_messages(job_description: dict,
             4) Przedstaw konkretne sugestie dotyczące ulepszeń, podzielone na sugestie dotyczące CV, sugestie dotyczące listu motywacyjnego i ogólne sugestie.
             5) Utwórz podsumowanie w co najmniej 3-5 zdaniach.
 
-            Używaj tylko następującej struktury JSON, bez żadnych zmian w nazewnictwie:
+            WAŻNE: Musisz zwrócić TYLKO prawidłowy obiekt JSON, który dokładnie odpowiada poniższej strukturze, bez dodatkowego tekstu lub wyjaśnień:
             ''')
     }
 

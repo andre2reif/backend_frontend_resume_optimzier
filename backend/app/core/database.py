@@ -1,10 +1,10 @@
 from pymongo import MongoClient
 import certifi
-from app.core.config import MONGODB_URI
+from app.core.config import settings
 
 # MongoDB Client initialisieren
 client_db = MongoClient(
-    MONGODB_URI,
+    settings.MONGODB_URI,
     tls=True,
     tlsCAFile=certifi.where()
 )

@@ -1,0 +1,60 @@
+{
+  "analysis_id": "67e57c825eb0bf2f8c3e18a3",
+  "status": "analysis_complete",
+  "analysisResult": {
+    "resume": {
+      "analysis": {
+        "ats_score": {
+          "total_score": 65,
+          "score_breakdown": {
+            "keyword_density": 70,
+            "skill_alignment": 60,
+            "format_compliance": 80
+          }
+        },
+        "match_score": {
+          "total_score": 75,
+          "matching_skills": [
+            "E-Commerce",
+            "Produktmanagement",
+            "Analytische Fähigkeiten",
+            "Teamfähigkeit",
+            "Fließende Deutsch- und Englischkenntnisse"
+          ],
+          "missing_skills": [
+            "Erfahrung im Management von Online-Marktplätzen, insbesondere Amazon und Otto",
+            "Sicherer Umgang mit Tools wie Amazon Seller Central, Vendor Central und idealerweise OTTO Market",
+            "Erfahrung im Umgang mit Performance-Marketing-Tools (z.B. Amazon Ads)"
+          ],
+          "additional_keywords": [
+            "KPI",
+            "Stakeholder-Management",
+            "Agiles Projektmanagement"
+          ]
+        },
+        "recruiter_evaluation": {
+          "invite_reason": "Starke Erfahrung im digitalen Produktmanagement und nachgewiesene Erfolge in der Optimierung von Nutzererfahrungen.",
+          "reject_reason": "Fehlende spezifische Erfahrung im Management von Online-Marktplätzen wie Amazon und Otto.",
+          "culture_fit_estimate": "Hohes Potenzial für kulturelle Passung aufgrund der Innovationskraft und Teamfähigkeit.",
+          "additional_observations": "Der Bewerber hat eine beeindruckende Karriere im digitalen Bereich, könnte jedoch spezifische Kenntnisse im E-Commerce-Marktplatzmanagement vertiefen."
+        },
+        "improvement_suggestions": {
+          "resume_suggestions": "Fügen Sie spezifische Erfahrungen im Management von Online-Marktplätzen hinzu, um die Anforderungen der Stellenbeschreibung besser zu erfüllen.",
+          "coverletter_suggestions": "Passen Sie das Anschreiben an die spezifische Position an, indem Sie relevante Erfahrungen im E-Commerce hervorheben.",
+          "overall_suggestions": "Stellen Sie sicher, dass alle relevanten Fähigkeiten und Erfahrungen klar und präzise dargestellt werden, um die ATS-Optimierung zu verbessern."
+        },
+        "summary": "Der Bewerber bringt über 26 Jahre Erfahrung im digitalen Umfeld mit, hat jedoch einige spezifische Anforderungen der Stellenbeschreibung nicht erfüllt. Die ATS-Analyse zeigt eine gute Übereinstimmung in den Schlüsselkompetenzen, jedoch fehlen wichtige Erfahrungen im Management von Online-Marktplätzen. Eine Anpassung des Lebenslaufs und des Anschreibens könnte die Chancen auf eine Einladung erhöhen."
+      }
+    },
+    "coverletter": {
+      "cover_letter_analysis": {
+        "tone": "Der Ton des Anschreibens ist professionell und enthusiastisch, was positiv wirkt. André zeigt Leidenschaft für digitale Produkte und Innovationen, was gut ankommt.",
+        "clarity": "Das Anschreiben ist klar strukturiert und die Absätze sind logisch aufgebaut. Die Verwendung von Fachbegriffen ist angemessen, könnte jedoch für Laien etwas schwer verständlich sein.",
+        "relevance": "Die Relevanz des Anschreibens zur Stellenbeschreibung ist gering. André bewirbt sich auf eine Position im Bereich Marketplace Management, während sein Anschreiben hauptsächlich auf Produktmanagement und Softwareentwicklung fokussiert ist.",
+        "alignment_with_job": "Das Anschreiben passt nicht gut zur Stellenbeschreibung. Es fehlen spezifische Erfahrungen und Fähigkeiten in Bezug auf E-Commerce-Plattformen, Marktanalyse und Kampagnenmanagement, die für die Stelle entscheidend sind.",
+        "creative_improvement_suggestions": "André sollte sein Anschreiben auf die spezifischen Anforderungen der Stelle zuschneiden. Er könnte konkrete Beispiele für Erfahrungen im E-Commerce und der Arbeit mit Plattformen wie Amazon oder Otto anführen. Eine persönliche Anekdote oder eine kreative Metapher zur Verbindung zwischen seiner Erfahrung und der Vision von Growing Imaginations könnte ebenfalls eindrucksvoll sein.",
+        "summary": "Insgesamt ist das Anschreiben gut formuliert, jedoch nicht optimal auf die ausgeschriebene Position abgestimmt. Ein stärkerer Fokus auf relevante E-Commerce-Erfahrungen und spezifische Fähigkeiten könnte die Chancen auf eine Einladung zum Vorstellungsgespräch erheblich erhöhen."
+      }
+    }
+  }
+}

@@ -8,6 +8,7 @@ from app.prompts.prompt_analysis_all_optimized import get_prompt_messages_optimi
 from app.utils.calc import count_tokens
 from openai import OpenAI
 import os
+import json
 
 router = APIRouter()
 client = OpenAI(api_key=os.getenv("RESUME_OPENAI_API_KEY"))
@@ -64,9 +65,6 @@ async def analysis_ats(
     coverletter_text = coverletter.get("optimized_coverletter", "") if use_optimized_coverletter else coverletter.get("structured_coverletter", "")
     jobdescription_data = jobdescription.get("structured_jobdescription", {})
     
-    # Debug-Ausgabe
-    print(f"JobDescription Data: {jobdescription_data}")
-    
     # Hole die Prompts für die Analyse
     messages = get_prompt_messages_analysis(
         resume=resume_text,
@@ -74,8 +72,6 @@ async def analysis_ats(
         job_description=jobdescription_data,
         language=language
     )
-
-    
     # Führe die Analyse durch
     response = client.chat.completions.create(
         model="gpt-4",
@@ -87,13 +83,19 @@ async def analysis_ats(
     # Extrahiere die Analyseergebnisse
     analysis_result = response.choices[0].message.content
     
+    # Parse den JSON-String in ein Python-Dictionary
+    try:
+        analysis_dict = json.loads(analysis_result)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail="Invalid analysis result format")
+    
     # Erstelle das Analyse-Dokument
     analysis_doc = {
         "userId": user_id,
         "resumeId": ObjectId(resume_id),
         "coverLetterId": ObjectId(coverletter_id),
         "jobDescriptionId": ObjectId(jobdescription_id),
-        "analysis": analysis_result,
+        "analysis": analysis_dict,  # Speichere als strukturiertes Objekt
         "language": language,
         "useOptimizedResume": use_optimized_resume,
         "useOptimizedCoverletter": use_optimized_coverletter,

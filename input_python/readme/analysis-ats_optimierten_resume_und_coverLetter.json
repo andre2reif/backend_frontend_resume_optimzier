@@ -1,0 +1,59 @@
+{
+  "analysis_id": "67e57c825eb0bf2f8c3e18a3",
+  "status": "analysis_complete",
+  "analysisResult": {
+    "resume": {
+      "analysis": {
+        "ats_score": {
+          "total_score": 75,
+          "score_breakdown": {
+            "keyword_density": 70,
+            "skill_alignment": 80,
+            "format_compliance": 85
+          }
+        },
+        "match_score": {
+          "total_score": 80,
+          "matching_skills": [
+            "E-Commerce",
+            "Online-Marktplätze",
+            "Analytische Fähigkeiten",
+            "Deutschkenntnisse",
+            "Englischkenntnisse"
+          ],
+          "missing_skills": [
+            "Amazon Seller Central",
+            "Performance-Marketing-Tools"
+          ],
+          "additional_keywords": [
+            "Kampagnenmanagement",
+            "Marktanalyse",
+            "Budgetierung"
+          ]
+        },
+        "recruiter_evaluation": {
+          "invite_reason": "Starke Erfahrung im E-Commerce und Management von Online-Marktplätzen.",
+          "reject_reason": "Fehlende spezifische Erfahrung mit Amazon Seller Central.",
+          "culture_fit_estimate": "Hohes Potenzial, aufgrund der kreativen und lösungsorientierten Denkweise.",
+          "additional_observations": "Die Leidenschaft für innovative Lösungen ist deutlich erkennbar."
+        },
+        "improvement_suggestions": {
+          "resume_suggestions": "Fügen Sie spezifische Erfahrungen mit Amazon Seller Central und Performance-Marketing-Tools hinzu.",
+          "coverletter_suggestions": "Vermeiden Sie unnötige Informationen und konzentrieren Sie sich auf relevante Erfahrungen im E-Commerce.",
+          "overall_suggestions": "Optimieren Sie die Verwendung von Schlüsselwörtern in beiden Dokumenten, um die ATS-Compliance zu verbessern."
+        },
+        "summary": "Der Bewerber bringt umfangreiche Erfahrung im E-Commerce mit, insbesondere im Management von Online-Marktplätzen. Die Fähigkeiten in der Analyse und im Kampagnenmanagement sind gut ausgeprägt, jedoch fehlen spezifische Kenntnisse in Tools wie Amazon Seller Central. Die Bewerbung zeigt eine starke Motivation und ein gutes Verständnis für die Unternehmensvision. Mit einigen Anpassungen könnte die Bewerbung noch überzeugender gestaltet werden."
+      }
+    },
+    "coverletter": {
+      "cover_letter_analysis": {
+        "tone": "Der Ton des Anschreibens ist professionell und positiv, was gut zur Unternehmenskultur passt. Allerdings könnte er an einigen Stellen emotionaler und überzeugender gestaltet werden.",
+        "clarity": "Die Klarheit des Anschreibens ist insgesamt gut, jedoch gibt es einige Abschnitte, die präziser formuliert werden könnten, um die Hauptbotschaften klarer herauszustellen.",
+        "relevance": "Das Anschreiben zeigt relevante Erfahrungen im E-Commerce und beim Management von Online-Marktplätzen, jedoch könnte eine stärkere Verbindung zu den spezifischen Anforderungen der Stellenbeschreibung hergestellt werden.",
+        "alignment_with_job": "Das Anschreiben deckt viele der Schlüsselanforderungen der Stellenbeschreibung ab, wie z.B. Erfahrung im Management von Marktplätzen und Kampagnen. Dennoch fehlen spezifische Beispiele für die Nutzung von Tools wie Amazon Seller Central und eine genauere Beschreibung der analytischen Fähigkeiten.",
+        "creative_improvement_suggestions": "1. Beginne mit einer starken, persönlichen Anekdote oder einer inspirierenden Aussage über deine Leidenschaft für E-Commerce. 2. Füge spezifische KPIs oder Erfolge aus früheren Positionen hinzu, um die eigenen Fähigkeiten greifbarer zu machen. 3. Erwähne spezifische Tools, die du verwendet hast, um deine Erfahrung zu untermauern. 4. Zeige mehr Begeisterung für die Vision von Growing Imaginations, um die persönliche Verbindung zur Unternehmensmission zu stärken.",
+        "summary": "Insgesamt ist das Anschreiben gut strukturiert und zeigt relevante Erfahrungen, könnte jedoch durch emotionalere Formulierungen und spezifischere Beispiele für Erfahrungen mit den geforderten Tools und Fähigkeiten verbessert werden. Eine stärkere Verbindung zur Unternehmensvision könnte ebenfalls helfen, sich von anderen Bewerbungen abzuheben."
+      }
+    }
+  }
+}

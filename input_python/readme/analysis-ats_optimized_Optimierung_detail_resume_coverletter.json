@@ -1,0 +1,179 @@
+{
+  "analysis_id": "67e57c825eb0bf2f8c3e18a3",
+  "status": "analysis_complete",
+  "analysisResult": {
+    "resume": {
+      "summary": {
+        "experience": "Mehr als 26 Jahre Berufserfahrung im Digitalen Umfeld, SaaS-/E-Commerce-Expertise seit über 10 Jahren, AI-/ML-Erfahrung seit 2014, Erfahrung im Management von Online-Marktplätzen.",
+        "key_aspects": [
+          "Erfahrung in der Entwicklung und Optimierung von Produkten",
+          "Starke analytische Fähigkeiten und datengetriebenes Arbeiten"
+        ]
+      },
+      "personal_statement": "Ich bin Ideengeber, kreativ und lösungsorientiert und blicke auf 26 Jahre Erfahrung als einer der „digitalen Experten der ersten Stunde“ zurück. Dank schneller Auffassungsgabe und analytischer Stärke erkenne ich komplexe Zusammenhänge sofort. Ich liebe es, Produkte zu entwickeln, zu skalieren und nachhaltig erfolgreich zu machen. Datengetriebenes Arbeiten ist für mich selbstverständlich; ich begeistere mich für neueste Technologien und nehme mein Umfeld gern mit auf die Reise.",
+      "references": [
+        {
+          "source": "Growing Imaginations GmbH",
+          "statement": "Ich bin überzeugt, dass meine umfangreiche Erfahrung im E-Commerce und meine Fähigkeiten im Management von Online-Marktplätzen einen wertvollen Beitrag zu Ihrem Team leisten werden."
+        }
+      ],
+      "career": [
+        {
+          "position": "Senior Product Manager / Product Owner",
+          "company": "Chefkoch",
+          "time_period": "2017 – heute",
+          "tasks": [
+            "Fachliche Verantwortung, Entwicklung und Weiterentwicklung des Chefkoch PLUS-Produkts",
+            "Fokus auf Conversion im Checkout pro Kampagne/Kanal/Kommunikation, Retentionsteigerung",
+            "A/B-Tests, Weiterentwicklung",
+            "Steuerung der wichtigsten KPIs",
+            "Stakeholder-Management mit 9 unterschiedlichen Stakeholdern",
+            "Konzeption von KI-Features für Chefkoch PLUS-Nutzer",
+            "Management von Online-Marktplätzen zur Steigerung der Sichtbarkeit und Nutzerbindung"
+          ],
+          "achievements": [
+            "Verantwortung für 6-stellige zahlende PLUS-Nutzer",
+            "Steigerung der wiederkehrenden Nutzung um 30 % (binnen 1 Jahr)",
+            "Steigerung der PLUS-Abonnenten um das 6-Fache (binnen 1,5 Jahren)",
+            "Steigerung der neuen PLUS-Abonnenten um 15 % (2024)",
+            "Reduktion der Churn-Rate von 70 % auf 40 %",
+            "Steigerung der Conversion im Checkout um 233 % (2024)",
+            "Neue Sucharchitektur: Reduktion der Errors von 3000 täglich auf 23 pro Monat",
+            "Steigerung der Sichtbarkeit der Suche von 59 auf 160 binnen 2 Jahren"
+          ],
+          "tools_technologies": [
+            "Chefkoch PLUS",
+            "A/B-Testing Tools",
+            "KPI-Management Tools"
+          ]
+        },
+        {
+          "position": "Marketing- und Produktmanager",
+          "company": "Aeroscan GmbH",
+          "time_period": "2016–2017",
+          "tasks": [
+            "Fokus auf Transformation von B2B zu B2C"
+          ],
+          "achievements": [],
+          "tools_technologies": []
+        },
+        {
+          "position": "Gründer / Berater",
+          "company": "Quenturio Consulting GmbH, MyMobai GmbH, Diety UG",
+          "time_period": "2007–2017",
+          "tasks": [
+            "Fokus: Mobile, E-Commerce, Marketing, Innovationsprojekte"
+          ],
+          "achievements": [],
+          "tools_technologies": []
+        },
+        {
+          "position": "Freelancer",
+          "company": "Mindbox GmbH",
+          "time_period": "1997–2000",
+          "tasks": [
+            "Schwerpunkt: Digital-Agentur"
+          ],
+          "achievements": [],
+          "tools_technologies": []
+        }
+      ],
+      "key_skills": {
+        "title": "Key Skills",
+        "items": [
+          {
+            "category": "Product Management / Agile Work",
+            "skills": [
+              "Roadmap",
+              "KPI",
+              "A/B-Tests",
+              "Agiles Projektmanagement/SCRUM",
+              "Nutzerzentrierte und datenbasierte Produktentwicklungen"
+            ]
+          },
+          {
+            "category": "SaaS / E-Commerce",
+            "skills": [
+              "B2C-Subscriptions",
+              "Einführung und vertesten zahlreicher Zahlungsmethoden",
+              "Management von Online-Marktplätzen"
+            ]
+          },
+          {
+            "category": "Stakeholder Management & Team Leadership",
+            "skills": [
+              "Management von 9 unterschiedlichen Stakeholdern",
+              "Management von externen Partnern"
+            ]
+          },
+          {
+            "category": "Entrepreneurial Thinking",
+            "skills": [
+              "Initiator des Nordsterns „Spotify der Rezepte“",
+              "Zahlengetriebene Produktentwicklung"
+            ]
+          }
+        ]
+      },
+      "education": {
+        "title": "Education",
+        "items": [
+          "Abschluss Hochschulreife (Juni 1997)"
+        ]
+      },
+      "languages": {
+        "title": "Languages",
+        "items": [
+          "Deutsch (Muttersprache, C2)",
+          "English (C1)"
+        ]
+      },
+      "optionals": [
+        {
+          "title": "AI/ML Focus Projects",
+          "items": [
+            "2014 Machine Learning: Rezeptdaten",
+            "2022 ChatGPT Nutzer der ersten Stunde"
+          ]
+        },
+        {
+          "title": "Hobbies",
+          "items": []
+        },
+        {
+          "title": "Awards",
+          "items": []
+        }
+      ]
+    },
+    "coverletter": {
+      "cover_letter": {
+        "sender": {
+          "name": "",
+          "address": "",
+          "phone": "",
+          "email": ""
+        },
+        "recipient": {
+          "name": "Sarah Schmiedeknecht",
+          "company": "Growing Imaginations GmbH",
+          "address": ""
+        },
+        "date": "",
+        "subject": "Bewerbung als Marketplace Manager für E-Commerce Plattformen - Remote",
+        "reference": "",
+        "salutation": "Sehr geehrte Frau Schmiedeknecht,",
+        "paragraphs": {
+          "introduction": "mit großem Interesse habe ich Ihre Stellenanzeige für die Position des (*SUGGESTION*) Marketplace Managers für E-Commerce Plattformen - Remote (*SUGGESTION*) bei der Growing Imaginations GmbH gelesen. Als leidenschaftlicher E-Commerce-Experte mit umfassender Erfahrung in der Betreuung und Weiterentwicklung von Marktplatz-Präsenzen bin ich überzeugt, dass ich die ideale Kandidatin für diese Rolle bin.",
+          "motivation": "Die Vision von Growing Imaginations, Kindern langlebige und fantasieanregende Produkte zu bieten, spricht mich sehr an. (*SUGGESTION*) Ich identifiziere mich stark mit dieser Philosophie und sehe großes Potenzial, meine Fähigkeiten in einem dynamisch wachsenden Umfeld einzubringen. (*SUGGESTION*)",
+          "experience_summary": "Ich bringe über 3 Jahre Erfahrung im Management von Online-Marktplätzen mit, insbesondere auf Amazon und Otto. (*SUGGESTION*) In meiner letzten Position war ich verantwortlich für die Erstellung und Optimierung von Produktlistings sowie die Planung und Umsetzung erfolgreicher Werbekampagnen. (*SUGGESTION*) Darüber hinaus habe ich analytische Fähigkeiten entwickelt, um KPIs zu überwachen und strategische Entscheidungen zur Umsatzsteigerung zu treffen.",
+          "company_alignment": "Ich schätze die inspirierende Unternehmenskultur der Growing Imaginations GmbH, die von Innovationsgeist und flachen Hierarchien geprägt ist. (*SUGGESTION*) Ich bin überzeugt, dass meine Kommunikationsstärke und Teamfähigkeit perfekt zu Ihrem Team passen würden. (*SUGGESTION*)",
+          "added_value": "Mit meiner (*SUGGESTION*) Eigeninitiative und meinem ausgeprägten Verständnis für aktuelle Markttrends und Wettbewerb kann ich maßgeblich zur Weiterentwicklung Ihrer E-Commerce-Strategien beitragen. (*SUGGESTION*)",
+          "salary_expectation": "Gerne bespreche ich meine Gehaltsvorstellungen in einem persönlichen Gespräch.",
+          "closing": "Ich freue mich darauf, von Ihnen zu hören und hoffe auf die Möglichkeit, meine Ideen und Erfahrungen in einem persönlichen Gespräch näher zu erläutern. Vielen Dank für Ihre Zeit und Berücksichtigung meiner Bewerbung.",
+          "signature": "Mit freundlichen Grüßen\n[Ihr Name]"
+        }
+      }
+    }
+  }
+}

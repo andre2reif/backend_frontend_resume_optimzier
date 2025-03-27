@@ -1,19 +1,37 @@
 # config.py
 
+from pydantic import BaseModel
+from functools import lru_cache
 import os
 from dotenv import load_dotenv
 
+# Lade die Umgebungsvariablen aus der .env Datei
 load_dotenv()
 
-# OpenAI Konfiguration
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4")
-MAX_TOKENS = 12000
+class Settings(BaseModel):
+    # API Konfiguration
+    API_V1_STR: str = "/api/v1"  # Unsere API-Versionierung
+    PROJECT_NAME: str = "Resume Optimizer API"
+    PROJECT_DESCRIPTION: str = "API für die Optimierung von Lebensläufen und Anschreiben"
+    VERSION: str = "0.1.1"
 
-# MongoDB Konfiguration
-MONGODB_URI = os.getenv("MONGODB_URI")
+    # OpenAI Konfiguration
+    OPENAI_API_KEY: str = os.getenv("RESUME_OPENAI_API_KEY")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4")
+    MAX_TOKENS: int = 12000
 
-# API Keys
-RESUME_OPENAI_API_KEY = os.getenv("RESUME_OPENAI_API_KEY")
+    # MongoDB Konfiguration
+    MONGODB_URI: str = os.getenv("MONGODB_URI")
+
+    # Sicherheitskonfiguration
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 Tage
+
+@lru_cache()
+def get_settings():
+    return Settings()
+
+settings = get_settings()
 
 # Überprüfe, ob alle notwendigen Umgebungsvariablen gesetzt sind
 required_env_vars = [
@@ -27,6 +45,7 @@ for var in required_env_vars:
         raise ValueError(f"{var} is not set. Check your .env file.")
 
 # Schemas
+# config.py
 RESUME_SCHEMA = """
 {
   "summary": {
@@ -171,6 +190,7 @@ ANALYSIS_SCHEMA = """
   }
 }
 """
+
 
 COVERLETTER_ANALYSIS_SCHEMA = """
 {

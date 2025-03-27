@@ -5,6 +5,41 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt adhäriert zu [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.1.2] - 2024-03-27
+
+### Geändert
+- Verbesserte Dokumentation der API-Endpunkte
+- Klarere Beschreibung der Parameter für ATS-Analyse
+- Aktualisierte Beispiel-URLs in der Dokumentation
+- Deutsche Übersetzungen für API-Parameter-Beschreibungen
+
+### Hinzugefügt
+- Neue Parameter für ATS-Analyse: use_optimized_resume und use_optimized_coverletter
+- Detailliertere Dokumentation der Analyse-Funktionalitäten
+- Verbesserte Fehlermeldungen und Status-Beschreibungen
+
+### Technisch
+- Optimierte Code-Struktur in main.py
+- Verbesserte Typisierung der API-Parameter
+- Erweiterte Validierung der Eingabeparameter
+
+## [0.1.1] - 2024-03-27
+
+### Geändert
+- Verbesserte Fehlerbehandlung in der ATS-Analyse
+- Korrektur der JobDescription-Verarbeitung in der Analyse-Route
+- Optimierte Datenbankabfragen für bessere Performance
+
+### Behoben
+- Fehler bei der Verarbeitung der strukturierten JobDescription-Daten
+- Problem mit der ObjectId-Serialisierung in der Analyse-Response
+- Fehlerhafte Parameterübergabe in der ATS-Analyse
+
+### Technische Verbesserungen
+- Verbesserte Debug-Ausgaben für bessere Fehlerdiagnose
+- Optimierte Datenstruktur für die Analyse-Ergebnisse
+- Verbesserte Validierung der Eingabeparameter
+
 ## [0.1.0] - 2024-03-27
 
 ### Verbessert
@@ -48,3 +83,20 @@ und dieses Projekt adhäriert zu [Semantic Versioning](https://semver.org/lang/d
   - API-Dokumentation (Swagger)
   - Setup-Anweisungen in README.md
   - Entwickler-Dokumentation 
+
+## [Unreleased]
+
+### Geändert
+- Verbesserte Fehlerbehandlung in der ATS-Analyse
+- Korrektur der JobDescription-Verarbeitung in der Analyse-Route
+- Optimierte Datenbankabfragen für bessere Performance
+
+### Behoben
+- Fehler bei der Verarbeitung der strukturierten JobDescription-Daten
+- Problem mit der ObjectId-Serialisierung in der Analyse-Response
+- Fehlerhafte Parameterübergabe in der ATS-Analyse
+
+### Technische Verbesserungen
+- Verbesserte Debug-Ausgaben für bessere Fehlerdiagnose
+- Optimierte Datenstruktur für die Analyse-Ergebnisse
+- Verbesserte Validierung der Eingabeparameter 
