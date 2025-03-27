@@ -1,0 +1,28 @@
+# Virtual Env init
+python3 -m venv ./venv
+python3 -m venv --python=/usr/bin/python3.10 ./venv
+python3 -m venv --python=/usr/local/bin/python3.12.4 ./venv
+virtualenv 
+virtualenv -p python3.10 ./venv
+
+
+# Virtual Env set
+source ./venv/bin/activate
+
+#requirements.txt anlegen 
+requirements.txt
+pip install --upgrade pip
+# requirements intallieren
+pip3 install -r requirements.txt 
+pip install schedule
+pip install TA-Lib
+pip install pandas_ta
+pip install scipy
+pip install python-binance
+pip3 install cmake
+pip install uvicorn
+pip install fastapi plotly 
+
+
+#Env verlassen
+venv) $ deactivate
