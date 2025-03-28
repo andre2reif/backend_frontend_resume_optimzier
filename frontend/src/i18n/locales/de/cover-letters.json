@@ -1,0 +1,82 @@
+{
+  "page": {
+    "title": "Meine Anschreiben",
+    "noCoverLetters": "Sie haben noch keine Anschreiben erstellt."
+  },
+  "button": {
+    "create": "Neues Anschreiben erstellen"
+  },
+  "modal": {
+    "title": "Wie möchten Sie Ihr Anschreiben erstellen?",
+    "wizard": "Anschreiben-Assistent",
+    "copyPaste": "Copy & Paste",
+    "fileUpload": "Datei hochladen"
+  },
+  "card": {
+    "untitled": "Unbenanntes Anschreiben",
+    "lastUpdated": "Zuletzt aktualisiert",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "deleting": "Wird gelöscht...",
+    "confirmDelete": "Möchten Sie dieses Anschreiben wirklich löschen?",
+    "status": {
+      "draft": "Entwurf",
+      "structured": "Strukturiert",
+      "optimized": "Optimiert"
+    }
+  },
+  "wizard": {
+    "title": "Anschreiben-Assistent",
+    "steps": {
+      "header": "Kopfzeile",
+      "introduction": "Einführung",
+      "mainContent": "Hauptinhalt",
+      "closing": "Schluss"
+    },
+    "form": {
+      "recipientName": "Name des Empfängers",
+      "company": "Unternehmen",
+      "address": "Adresse",
+      "position": "Position",
+      "motivation": "Motivation",
+      "experience": "Erfahrung",
+      "qualification": "Qualifikation",
+      "closing": "Schlussformel",
+      "signature": "Unterschrift"
+    },
+    "buttons": {
+      "next": "Weiter",
+      "back": "Zurück",
+      "finish": "Fertigstellen",
+      "cancel": "Abbrechen"
+    }
+  },
+  "copyPaste": {
+    "title": "Anschreiben einfügen",
+    "description": "Fügen Sie Ihr Anschreiben hier ein. Sie können den Text aus einem anderen Dokument kopieren und hier einfügen.",
+    "form": {
+      "title": "Titel",
+      "content": "Inhalt"
+    },
+    "buttons": {
+      "submit": "Speichern",
+      "cancel": "Abbrechen"
+    }
+  },
+  "upload": {
+    "coverLetterTitle": "Anschreiben hochladen",
+    "dropHere": "Datei hier ablegen",
+    "dragAndDrop": "oder klicken Sie zum Auswählen",
+    "supportedFormats": "Unterstützte Formate: PDF, DOC, DOCX",
+    "uploading": "Wird hochgeladen..."
+  },
+  "errors": {
+    "loadFailed": "Fehler beim Laden der Anschreiben",
+    "createFailed": "Fehler beim Erstellen des Anschreibens",
+    "updateFailed": "Fehler beim Aktualisieren des Anschreibens",
+    "deleteFailed": "Fehler beim Löschen des Anschreibens",
+    "fileSize": "Die Datei ist zu groß. Maximale Größe: 10MB",
+    "extractFailed": "Fehler beim Extrahieren des Textes",
+    "saveFailed": "Fehler beim Speichern des Anschreibens"
+  }
+} 

@@ -5,6 +5,18 @@ Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
 und dieses Projekt adhäriert zu [Semantic Versioning](https://semver.org/lang/de/).
 
+## [0.1.3] - 2024-03-28
+
+### Behoben
+- Drag & Drop Funktionalität für Word- und PDF-Dateien implementiert
+- Port-Konfiguration korrigiert (Frontend: 3002, Backend: 8000)
+- API-Endpunkt-Konfiguration in Frontend angepasst
+
+### Technisch
+- Frontend-Port in package.json auf 3002 gesetzt
+- API_BASE_URL in file-utils.ts auf Port 8000 aktualisiert
+- CORS-Konfiguration für die korrekten Ports angepasst
+
 ## [0.1.2] - 2024-03-27
 
 ### Geändert
@@ -40,49 +52,28 @@ und dieses Projekt adhäriert zu [Semantic Versioning](https://semver.org/lang/d
 - Optimierte Datenstruktur für die Analyse-Ergebnisse
 - Verbesserte Validierung der Eingabeparameter
 
-## [0.1.0] - 2024-03-27
+## [0.1.0] - 2024-03-21
 
-### Verbessert
-- **Projektstruktur**: Umfassende Reorganisation des Backend-Codes
-  - Aufteilung in modulare Komponenten (core, routers, schemas, utils)
-  - Klare Trennung der Verantwortlichkeiten
-  - Verbesserte Wartbarkeit und Testbarkeit
+### Added
+- Initiale Version des CV-Managers
+- PDF Upload Funktionalität
+- Grundlegende Lebenslauf-Verwaltung (Erstellen, Löschen, Auflisten)
+- Basis UI mit TailwindCSS und DaisyUI
 
-- **FastAPI-Integration**:
-  - Vereinfachte main.py mit Fokus auf Router-Registrierung
-  - Verbesserte API-Dokumentation durch Metadaten
-  - Erweiterter Root-Endpunkt mit zusätzlichen Informationen
+### Fixed
+- CORS-Probleme mit Backend-Endpunkten behoben
+- Mehrfache API-Aufrufe beim Laden der Lebensläufe reduziert
+- Upload-Status-Handling verbessert
 
-- **Datenmodellierung**:
-  - Einführung von Pydantic-Modellen für alle Schemas
-  - Separate Schema-Dateien für bessere Übersichtlichkeit
-  - Typsichere Datenvalidierung
+### Pending
+- Word-Dokument Upload noch nicht implementiert
+- Strukturierung der Lebensläufe nach dem Upload (Prozessschritt erforderlich)
+- Analyse-Endpunkt vorhanden, Integration in UI-Flow ausstehend
 
-- **Konfigurationsmanagement**:
-  - Zentralisierte Konfiguration in core/config.py
-  - Verbesserte Umgebungsvariablen-Überprüfung
-  - Klare Trennung von Konfiguration und Schemas
-
-### Geplant
-- **Tests**:
-  - Pytest-Konfiguration
-  - Router-spezifische Test-Dateien
-  - Mock-Daten für Tests
-
-- **Docker-Integration**:
-  - Dockerfile für Backend
-  - docker-compose.yml für Entwicklung/Produktion
-  - .dockerignore
-
-- **CI/CD**:
-  - GitHub Actions für automatische Tests
-  - Deployment-Pipeline
-  - Code-Qualitätsprüfungen (Black, Flake8)
-
-- **Dokumentation**:
-  - API-Dokumentation (Swagger)
-  - Setup-Anweisungen in README.md
-  - Entwickler-Dokumentation 
+### Technical Debt
+- Typ-Definitionen für API-Responses vervollständigen
+- Error-Handling vereinheitlichen
+- Loading-States optimieren
 
 ## [Unreleased]
 

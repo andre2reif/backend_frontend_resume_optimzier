@@ -62,7 +62,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-# CORS Middleware
+# CORS-Konfiguration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:3002"],  # Frontend-URLs
@@ -72,12 +72,12 @@ app.add_middleware(
 )
 
 # Router einbinden
-app.include_router(resume.router, prefix=f"{settings.API_V1_STR}/resumes", tags=["resumes"])
-app.include_router(coverletter.router, prefix=f"{settings.API_V1_STR}/coverletters", tags=["coverletters"])
-app.include_router(jobdescription.router, prefix=f"{settings.API_V1_STR}/jobdescriptions", tags=["jobdescriptions"])
-app.include_router(analysis.router, prefix=f"{settings.API_V1_STR}/analysis", tags=["analysis"])
-app.include_router(coverletter_analysis.router, prefix=f"{settings.API_V1_STR}/coverletter-analysis", tags=["coverletter-analysis"])
-app.include_router(extract.router, prefix=f"{settings.API_V1_STR}", tags=["extract"])
+app.include_router(resume.router, prefix="/api/v1/resumes", tags=["resumes"])
+app.include_router(coverletter.router, prefix="/api/v1/coverletters", tags=["coverletters"])
+app.include_router(jobdescription.router, prefix="/api/v1/jobdescriptions", tags=["jobdescriptions"])
+app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["analysis"])
+app.include_router(coverletter_analysis.router, prefix="/api/v1/coverletter-analysis", tags=["coverletter-analysis"])
+app.include_router(extract.router, prefix="/api/v1", tags=["extract"])
 
 def count_documents(collection):
     return collection.count_documents({})

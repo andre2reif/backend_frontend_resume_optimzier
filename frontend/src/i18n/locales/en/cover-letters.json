@@ -1,0 +1,82 @@
+{
+  "page": {
+    "title": "My Cover Letters",
+    "noCoverLetters": "You haven't created any cover letters yet."
+  },
+  "button": {
+    "create": "Create New Cover Letter"
+  },
+  "modal": {
+    "title": "How would you like to create your cover letter?",
+    "wizard": "Cover Letter Wizard",
+    "copyPaste": "Copy & Paste",
+    "fileUpload": "Upload File"
+  },
+  "card": {
+    "untitled": "Untitled Cover Letter",
+    "lastUpdated": "Last updated",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "confirmDelete": "Are you sure you want to delete this cover letter?",
+    "status": {
+      "draft": "Draft",
+      "structured": "Structured",
+      "optimized": "Optimized"
+    }
+  },
+  "wizard": {
+    "title": "Cover Letter Wizard",
+    "steps": {
+      "header": "Header",
+      "introduction": "Introduction",
+      "mainContent": "Main Content",
+      "closing": "Closing"
+    },
+    "form": {
+      "recipientName": "Recipient Name",
+      "company": "Company",
+      "address": "Address",
+      "position": "Position",
+      "motivation": "Motivation",
+      "experience": "Experience",
+      "qualification": "Qualification",
+      "closing": "Closing",
+      "signature": "Signature"
+    },
+    "buttons": {
+      "next": "Next",
+      "back": "Back",
+      "finish": "Finish",
+      "cancel": "Cancel"
+    }
+  },
+  "copyPaste": {
+    "title": "Paste Cover Letter",
+    "description": "Paste your cover letter here. You can copy the text from another document and paste it here.",
+    "form": {
+      "title": "Title",
+      "content": "Content"
+    },
+    "buttons": {
+      "submit": "Save",
+      "cancel": "Cancel"
+    }
+  },
+  "upload": {
+    "coverLetterTitle": "Upload Cover Letter",
+    "dropHere": "Drop file here",
+    "dragAndDrop": "or click to select",
+    "supportedFormats": "Supported formats: PDF, DOC, DOCX",
+    "uploading": "Uploading..."
+  },
+  "errors": {
+    "loadFailed": "Failed to load cover letters",
+    "createFailed": "Failed to create cover letter",
+    "updateFailed": "Failed to update cover letter",
+    "deleteFailed": "Failed to delete cover letter",
+    "fileSize": "File is too large. Maximum size: 10MB",
+    "extractFailed": "Failed to extract text",
+    "saveFailed": "Failed to save cover letter"
+  }
+} 
