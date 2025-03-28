@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import certifi
 from datetime import datetime
-from app.routers import resume, coverletter, jobdescription, analysis, coverletter_analysis
+from app.routers import resume, coverletter, jobdescription, analysis, coverletter_analysis, extract
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -65,18 +65,19 @@ app = FastAPI(
 # CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:3000", "http://localhost:3002"],  # Frontend-URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Router einbinden
-app.include_router(resume.router, prefix=settings.API_V1_STR)
-app.include_router(coverletter.router, prefix=settings.API_V1_STR)
-app.include_router(jobdescription.router, prefix=settings.API_V1_STR)
-app.include_router(analysis.router, prefix=settings.API_V1_STR)
-app.include_router(coverletter_analysis.router, prefix=settings.API_V1_STR)
+app.include_router(resume.router, prefix=f"{settings.API_V1_STR}/resumes", tags=["resumes"])
+app.include_router(coverletter.router, prefix=f"{settings.API_V1_STR}/coverletters", tags=["coverletters"])
+app.include_router(jobdescription.router, prefix=f"{settings.API_V1_STR}/jobdescriptions", tags=["jobdescriptions"])
+app.include_router(analysis.router, prefix=f"{settings.API_V1_STR}/analysis", tags=["analysis"])
+app.include_router(coverletter_analysis.router, prefix=f"{settings.API_V1_STR}/coverletter-analysis", tags=["coverletter-analysis"])
+app.include_router(extract.router, prefix=f"{settings.API_V1_STR}", tags=["extract"])
 
 def count_documents(collection):
     return collection.count_documents({})
