@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { resumeApi } from '@/lib/api';
-import { Resume } from '@/types/api';
+import { resumeApi } from '@/lib/api/resume';
+import { Resume, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
 import PDFDownloadButton from '@/components/PDFDownloadButton';
 import LayoutMain from '@/components/layout/LayoutMain';
@@ -31,12 +31,12 @@ export default function ResumeEditPage({ params }: { params: { id: string } }) {
 
   const fetchResume = async () => {
     try {
-      const response = await resumeApi.getById(params.id);
-      if (response.data.data) {
-        setResume(response.data.data);
+      const response: ApiResponse<Resume> = await resumeApi.getById(params.id);
+      if (response.status === 'success' && response.data) {
+        setResume(response.data);
         setFormData({
-          title: response.data.data.title,
-          content: response.data.data.content || '',
+          title: response.data.title,
+          content: response.data.content || '',
         });
       } else {
         throw new Error('Keine Daten vom Server erhalten');
@@ -55,12 +55,23 @@ export default function ResumeEditPage({ params }: { params: { id: string } }) {
     setIsSaving(true);
 
     try {
-      const response = await resumeApi.update(params.id, formData);
-      if (response.data.data) {
-        setResume(response.data.data);
+      if (!resume) {
+        throw new Error('Kein Lebenslauf geladen');
+      }
+
+      // Erstelle ein aktualisiertes Resume-Objekt
+      const updatedResume = {
+        ...resume,
+        title: formData.title,
+        content: formData.content
+      };
+
+      const response: ApiResponse<Resume> = await resumeApi.patch(params.id, resume, updatedResume);
+      if (response.status === 'success' && response.data) {
+        setResume(response.data);
         toast.success('Lebenslauf erfolgreich gespeichert');
       } else {
-        throw new Error('Keine Daten vom Server erhalten');
+        throw new Error(response.message || 'Keine Daten vom Server erhalten');
       }
     } catch (error) {
       console.error('Fehler beim Speichern des Lebenslaufs:', error);

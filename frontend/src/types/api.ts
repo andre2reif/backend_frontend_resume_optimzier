@@ -32,9 +32,20 @@ export interface Resume {
     languages?: {
       items: string[];
     };
+    optionals?: Array<{
+      title: string;
+      items: string[];
+    }>;
   };
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UpdateResumeData {
+  title: string;
+  content: string;
+  user_id?: string;  // Optional, da wir es aus der Session holen
+  structured_resume?: Resume['structured_resume'];
 }
 
 export interface ResumeAnalysis {
@@ -160,4 +171,15 @@ export interface Analysis {
     improvement_suggestions: string[];
     summary: string;
   };
+}
+
+export type PatchOperation = {
+  op: 'replace' | 'add' | 'remove';
+  path: string;
+  value?: any;
+}
+
+export interface ResumePatch {
+  operations: PatchOperation[];
+  user_id: string;
 } 

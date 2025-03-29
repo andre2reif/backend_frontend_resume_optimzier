@@ -7,6 +7,18 @@ from app.prompts.prompt_resume_optimize import get_prompt_messages as get_prompt
 from app.utils.calc import count_tokens
 from openai import OpenAI
 import os
+from typing import List, Dict, Any, Union
+from pydantic import BaseModel
+
+# Pydantic Modelle für die PATCH-Operation
+class PatchOperation(BaseModel):
+    op: str
+    path: str
+    value: Any
+
+class ResumePatch(BaseModel):
+    operations: List[PatchOperation]
+    user_id: str
 
 router = APIRouter()
 client = OpenAI(api_key=os.getenv("RESUME_OPENAI_API_KEY"))
@@ -121,5 +133,84 @@ async def get_resume(resume_id: str, user_id: str = Query(..., description="User
                 "updatedAt": resume["updatedAt"].isoformat()
             }
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.patch("/patch/{resume_id}")
+async def patch_resume(
+    resume_id: str,
+    patch_data: ResumePatch,
+    user_id: str = Query(..., description="User ID (as string) to restrict access")
+):
+    """
+    Aktualisiert einen Lebenslauf teilweise mit JSON Patch Operationen.
+    
+    - Unterstützt 'replace' Operationen für title, content und structured_resume
+    - Validiert die Benutzer-Berechtigung
+    - Führt die Patch-Operationen in der angegebenen Reihenfolge aus
+    """
+    try:
+        # Prüfe, ob der Lebenslauf existiert und dem Benutzer gehört
+        resume = collection_resume.find_one({"_id": ObjectId(resume_id)})
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        if str(resume.get("userId", "")) != user_id:
+            raise HTTPException(status_code=403, detail="Access forbidden: Resume does not belong to this user")
+        
+        # Initialisiere das Update-Dokument
+        update_doc = {
+            "updatedAt": datetime.utcnow()
+        }
+        
+        # Verarbeite die Patch-Operationen
+        for operation in patch_data.operations:
+            if operation.op != "replace":
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Operation '{operation.op}' nicht unterstützt. Nur 'replace' ist erlaubt."
+                )
+            
+            # Entferne den führenden Slash vom Pfad
+            field = operation.path.lstrip("/")
+            
+            # Validiere erlaubte Felder
+            if field not in ["title", "content", "structured_resume"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Feld '{field}' kann nicht gepatcht werden"
+                )
+            
+            # Füge das Feld zum Update-Dokument hinzu
+            if field == "content":
+                update_doc["rawText"] = operation.value
+            else:
+                update_doc[field] = operation.value
+        
+        # Führe das Update durch
+        result = collection_resume.update_one(
+            {"_id": ObjectId(resume_id)},
+            {"$set": update_doc}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=400, detail="Keine Änderungen am Lebenslauf vorgenommen")
+        
+        # Hole den aktualisierten Lebenslauf
+        updated_resume = collection_resume.find_one({"_id": ObjectId(resume_id)})
+        
+        return {
+            "status": "success",
+            "message": "Lebenslauf erfolgreich aktualisiert",
+            "data": {
+                "_id": str(updated_resume["_id"]),
+                "title": updated_resume["title"],
+                "content": updated_resume.get("rawText", ""),
+                "structured_resume": updated_resume.get("structured_resume", {}),
+                "createdAt": updated_resume["createdAt"].isoformat(),
+                "updatedAt": updated_resume["updatedAt"].isoformat()
+            }
+        }
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

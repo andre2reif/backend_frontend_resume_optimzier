@@ -4,8 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { resumeApi } from '@/lib/api';
-import { Resume } from '@/types/api';
+import { resumeApi } from '@/lib/api/resume';
+import { Resume, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
 import FileUpload from '@/components/FileUpload';
 import LayoutMain from '@/components/layout/LayoutMain';
@@ -28,7 +28,7 @@ export default function ResumeListPage() {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await resumeApi.getAll();
+      const response: ApiResponse<Resume[]> = await resumeApi.getAll();
       console.log('Resumes response:', response); // Debug log
       
       if (response.status === 'success' && response.data) {
@@ -54,7 +54,7 @@ export default function ResumeListPage() {
           setIsStructuring(false);
         }
       } else {
-        throw new Error('Fehler beim Laden der Lebensläufe');
+        throw new Error('Keine Daten vom Server erhalten');
       }
     } catch (err) {
       console.error('Fehler beim Laden:', err);
@@ -123,18 +123,36 @@ export default function ResumeListPage() {
 
   const handleSave = async (updatedResume: Resume) => {
     try {
-      const response = await resumeApi.update(updatedResume.id, updatedResume);
+      // Verwende _id statt id für MongoDB
+      const resumeId = updatedResume._id || updatedResume.id;
+      if (!resumeId) {
+        throw new Error('Keine gültige ID für den Lebenslauf gefunden');
+      }
+
+      // Finde den ursprünglichen Lebenslauf
+      const originalResume = resumes.find(resume => 
+        resume._id === resumeId || resume.id === resumeId
+      );
+
+      if (!originalResume) {
+        throw new Error('Ursprünglicher Lebenslauf nicht gefunden');
+      }
+
+      console.log('Patching resume with ID:', resumeId); // Debug log
+      const response: ApiResponse<Resume> = await resumeApi.patch(resumeId, originalResume, updatedResume);
+      
       if (response.status === 'success' && response.data) {
-        setResumes(resumes.map(resume => 
-          resume.id === response.data.id ? response.data : resume
+        const updatedResume = response.data;
+        setResumes(prevResumes => prevResumes.map(resume => 
+          (resume._id === updatedResume._id || resume.id === updatedResume.id) ? updatedResume : resume
         ));
-        toast.success('Lebenslauf erfolgreich aktualisiert');
+        toast.success('Erfolgreich geupdatet');
       } else {
         throw new Error('Fehler beim Speichern');
       }
     } catch (err) {
       console.error('Speichern Fehler:', err);
-      toast.error('Fehler beim Speichern des Lebenslaufs');
+      toast.error('Es ist ein Fehler aufgetreten');
     }
   };
 
@@ -216,8 +234,9 @@ export default function ResumeListPage() {
                       className="btn btn-primary"
                       onClick={() => {
                         console.log('Clicked resume:', resume); // Debug log
-                        if (resume.id) {
-                          handleEdit(resume.id);
+                        const resumeId = resume._id || resume.id;
+                        if (resumeId) {
+                          handleEdit(resumeId);
                         } else {
                           console.error('Keine ID für Resume:', resume);
                         }
