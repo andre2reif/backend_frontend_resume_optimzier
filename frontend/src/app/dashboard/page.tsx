@@ -1,119 +1,134 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useEffect, useState, useCallback } from 'react';
+import LayoutMain from '@/components/layout/LayoutMain';
 import Link from 'next/link';
-import { DocumentTextIcon, EnvelopeIcon, CreditCardIcon } from '@heroicons/react/24/outline';
+import { useSession } from 'next-auth/react';
+import { API_BASE_URL } from '@/config/api';
 
-const stats = [
-  { name: 'Lebensläufe', value: '0', href: '/resume' },
-  { name: 'Anschreiben', value: '0', href: '/coverletter' },
-  { name: 'Verbleibende Credits', value: '0', href: '/credits' },
-];
+interface Stats {
+  resumes_count: number;
+  job_descriptions_count: number;
+  optimized_resumes_count: number;
+  cover_letters_count: number;
+  available_credits: number;
+}
 
-export default function Dashboard() {
+export default function DashboardPage() {
   const { data: session } = useSession();
+  const [stats, setStats] = useState<Stats>({
+    resumes_count: 0,
+    job_descriptions_count: 0,
+    optimized_resumes_count: 0,
+    cover_letters_count: 0,
+    available_credits: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchStats = useCallback(async () => {
+    if (!session?.user?.email) return;
+
+    try {
+      setIsLoading(true);
+      const response = await fetch(`${API_BASE_URL}/api/v1/user/stats?user_id=${encodeURIComponent(session.user.email)}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch stats');
+      }
+
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [session?.user?.email]);
+
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
 
   if (!session) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-base-content">Bitte melden Sie sich an</h1>
-          <Link
-            href="/auth/signin"
-            className="mt-4 inline-block rounded-md bg-primary px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90"
-          >
-            Anmelden
-          </Link>
+      <LayoutMain>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900">Bitte melden Sie sich an</h1>
+            <Link
+              href="/auth/signin"
+              className="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+            >
+              Anmelden
+            </Link>
+          </div>
         </div>
-      </div>
+      </LayoutMain>
     );
   }
 
   return (
-    <div>
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="sm:flex sm:items-center">
-          <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-base-content">Dashboard</h1>
-            <p className="mt-2 text-sm text-base-content/80">
-              Willkommen zurück, {session.user?.name}! Hier finden Sie eine Übersicht Ihrer Bewerbungsunterlagen.
-            </p>
-          </div>
-          <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-            <Link
-              href="/resume/new"
-              className="block rounded-md bg-primary px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-primary/90"
-            >
-              Neuer Lebenslauf
-            </Link>
-          </div>
+    <LayoutMain>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
+        
+        <div className="max-w-3xl mx-auto text-center mb-12">
+          <p className="text-gray-600">
+            Maximieren Sie Ihre Bewerbungschancen mit KI-optimierten Lebensläufen.
+            Unser intelligentes System analysiert Ihre Dokumente und passt sie automatisch
+            an spezifische Stellenausschreibungen an. Sehen Sie direkt, wie gut Sie zur
+            Stelle passen und welche konkreten Verbesserungen vorgenommen wurden.
+          </p>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {stats.map((stat) => (
-            <Link
-              key={stat.name}
-              href={stat.href}
-              className="relative overflow-hidden rounded-lg bg-base-200 px-4 pb-12 pt-5 shadow sm:px-6 sm:pt-6"
-            >
-              <dt>
-                <div className="absolute rounded-md bg-primary p-3">
-                  {stat.name === 'Lebensläufe' && <DocumentTextIcon className="h-6 w-6 text-white" />}
-                  {stat.name === 'Anschreiben' && <EnvelopeIcon className="h-6 w-6 text-white" />}
-                  {stat.name === 'Verbleibende Credits' && <CreditCardIcon className="h-6 w-6 text-white" />}
-                </div>
-                <p className="ml-16 truncate text-sm font-medium text-base-content/80">{stat.name}</p>
-              </dt>
-              <dd className="ml-16 flex items-baseline pb-6 sm:pb-7">
-                <p className="text-2xl font-semibold text-base-content">{stat.value}</p>
-              </dd>
-            </Link>
-          ))}
-        </div>
-
-        <div className="mt-8">
-          <div className="sm:flex sm:items-center">
-            <div className="sm:flex-auto">
-              <h2 className="text-base font-semibold leading-6 text-base-content">Letzte Aktivitäten</h2>
-              <p className="mt-2 text-sm text-base-content/80">
-                Eine Übersicht Ihrer kürzlich erstellten oder bearbeiteten Dokumente.
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Lebensläufe Card */}
+          <Link href="/resume" className="block">
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Lebensläufe</h3>
+              <p className="text-4xl font-bold text-blue-600">
+                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : stats.resumes_count}
               </p>
+              <p className="text-sm text-gray-500 mt-2">Lebenslauf hochladen</p>
             </div>
-          </div>
-          <div className="mt-4 flow-root">
-            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <div className="overflow-hidden shadow ring-1 ring-base-content/5 sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-base-content/5">
-                    <thead className="bg-base-200">
-                      <tr>
-                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-base-content sm:pl-6">
-                          Name
-                        </th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-base-content">
-                          Typ
-                        </th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-base-content">
-                          Letzte Änderung
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-base-content/5 bg-base-100">
-                      <tr>
-                        <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-base-content sm:pl-6">
-                          Keine Dokumente vorhanden
-                        </td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-base-content/80">-</td>
-                        <td className="whitespace-nowrap px-3 py-4 text-sm text-base-content/80">-</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+          </Link>
+
+          {/* Stellenbeschreibung Card */}
+          <Link href="/jobdescription" className="block">
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Stellenbeschreibung</h3>
+              <p className="text-4xl font-bold text-green-600">
+                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : stats.job_descriptions_count}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">Stellenbeschreibung hinzufügen</p>
             </div>
-          </div>
+          </Link>
+
+          {/* Optimierte Lebensläufe Card */}
+          <Link href="/optimized" className="block">
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Optimierte Lebensläufe</h3>
+              <p className="text-4xl font-bold text-purple-600">
+                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : stats.optimized_resumes_count}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">Lebenslauf optimieren</p>
+            </div>
+          </Link>
+
+          {/* Credits Card */}
+          <Link href="/credits" className="block">
+            <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">Credits & Abrechnung</h3>
+              <p className="text-4xl font-bold text-orange-600">
+                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : stats.available_credits}
+              </p>
+              <p className="text-sm text-gray-500 mt-2">Verfügbare Credits</p>
+            </div>
+          </Link>
         </div>
       </div>
-    </div>
+    </LayoutMain>
   );
 } 

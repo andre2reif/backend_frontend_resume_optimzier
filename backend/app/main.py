@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, UploadFile, File, Form
 from pydantic import BaseModel
 from pymongo import MongoClient
 from bson import ObjectId
@@ -8,9 +8,10 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import certifi
 from datetime import datetime
-from app.routers import resume, coverletter, jobdescription, analysis, coverletter_analysis, extract
+from app.routers import resume, coverletter, jobdescription, analysis, coverletter_analysis, extract, user
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
+from app.utils.calc import count_tokens
 
 # Eigene Prompt-Funktionen importieren
 from app.prompts.prompt_resume import get_prompt_messages as get_prompt_messages_resume
@@ -29,7 +30,6 @@ from app.prompts.prompt_analysis_all_optimized import get_prompt_messages_optimi
 from app.prompts.prompt_coverletter_optimize import get_prompt_messages as get_prompt_messages_coverletter_optimize
 
 load_dotenv()
-
 
 client = OpenAI(api_key=os.getenv("RESUME_OPENAI_API_KEY"))
 
@@ -78,6 +78,7 @@ app.include_router(jobdescription.router, prefix="/api/v1/jobdescriptions", tags
 app.include_router(analysis.router, prefix="/api/v1/analysis", tags=["analysis"])
 app.include_router(coverletter_analysis.router, prefix="/api/v1/coverletter-analysis", tags=["coverletter-analysis"])
 app.include_router(extract.router, prefix="/api/v1", tags=["extract"])
+app.include_router(user.router, prefix="/api/v1/user", tags=["user"])
 
 def count_documents(collection):
     return collection.count_documents({})

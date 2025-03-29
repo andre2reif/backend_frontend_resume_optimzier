@@ -3,18 +3,17 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { resumeApi } from '@/lib/api';
-import { Resume } from '@/types/api';
+import { jobDescriptionApi } from '@/lib/api';
+import { JobDescription } from '@/types/api';
 import toast from 'react-hot-toast';
-import PDFDownloadButton from '@/components/PDFDownloadButton';
 import LayoutMain from '@/components/layout/LayoutMain';
 
-export default function ResumeEditPage({ params }: { params: { id: string } }) {
+export default function JobDescriptionEditPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [resume, setResume] = useState<Resume | null>(null);
+  const [jobDescription, setJobDescription] = useState<JobDescription | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -26,25 +25,24 @@ export default function ResumeEditPage({ params }: { params: { id: string } }) {
       return;
     }
 
-    fetchResume();
+    fetchJobDescription();
   }, [session, router, params.id]);
 
-  const fetchResume = async () => {
+  const fetchJobDescription = async () => {
     try {
-      const response = await resumeApi.getById(params.id);
+      const response = await jobDescriptionApi.getById(params.id);
       if (response.data.data) {
-        setResume(response.data.data);
+        setJobDescription(response.data.data);
         setFormData({
           title: response.data.data.title,
-          content: response.data.data.content || '',
+          content: response.data.data.content,
         });
       } else {
         throw new Error('Keine Daten vom Server erhalten');
       }
     } catch (error) {
-      console.error('Fehler beim Laden des Lebenslaufs:', error);
-      toast.error('Fehler beim Laden des Lebenslaufs');
-      router.push('/resume');
+      toast.error('Fehler beim Laden der Stellenausschreibung');
+      router.push('/jobdescription');
     } finally {
       setIsLoading(false);
     }
@@ -55,33 +53,31 @@ export default function ResumeEditPage({ params }: { params: { id: string } }) {
     setIsSaving(true);
 
     try {
-      const response = await resumeApi.update(params.id, formData);
+      const response = await jobDescriptionApi.update(params.id, formData);
       if (response.data.data) {
-        setResume(response.data.data);
-        toast.success('Lebenslauf erfolgreich gespeichert');
+        setJobDescription(response.data.data);
+        toast.success('Stellenausschreibung erfolgreich gespeichert');
       } else {
         throw new Error('Keine Daten vom Server erhalten');
       }
     } catch (error) {
-      console.error('Fehler beim Speichern des Lebenslaufs:', error);
-      toast.error('Fehler beim Speichern des Lebenslaufs');
+      toast.error('Fehler beim Speichern der Stellenausschreibung');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Möchten Sie diesen Lebenslauf wirklich löschen?')) {
+    if (!confirm('Möchten Sie diese Stellenausschreibung wirklich löschen?')) {
       return;
     }
 
     try {
-      await resumeApi.delete(params.id);
-      toast.success('Lebenslauf erfolgreich gelöscht');
-      router.push('/resume');
+      await jobDescriptionApi.delete(params.id);
+      toast.success('Stellenausschreibung erfolgreich gelöscht');
+      router.push('/jobdescription');
     } catch (error) {
-      console.error('Fehler beim Löschen des Lebenslaufs:', error);
-      toast.error('Fehler beim Löschen des Lebenslaufs');
+      toast.error('Fehler beim Löschen der Stellenausschreibung');
     }
   };
 
@@ -99,7 +95,7 @@ export default function ResumeEditPage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (!resume) {
+  if (!jobDescription) {
     return null;
   }
 
@@ -108,16 +104,10 @@ export default function ResumeEditPage({ params }: { params: { id: string } }) {
       <div className="space-y-6">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-base-content">Lebenslauf bearbeiten</h1>
+            <h1 className="text-2xl font-semibold text-base-content">Stellenausschreibung bearbeiten</h1>
             <p className="mt-2 text-sm text-base-content/80">
-              Bearbeiten Sie Ihren Lebenslauf und optimieren Sie ihn für ATS-Systeme.
+              Bearbeiten Sie Ihre Stellenausschreibung und analysieren Sie sie für optimale Bewerbungen.
             </p>
-          </div>
-          <div className="mt-4 sm:ml-16 sm:mt-0">
-            <PDFDownloadButton
-              resume={resume}
-              className="btn btn-primary"
-            />
           </div>
         </div>
 

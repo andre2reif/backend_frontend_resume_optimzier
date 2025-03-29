@@ -1,14 +1,40 @@
 // Resume Types
 export interface Resume {
-  id: string;
+  id?: string;
+  _id?: string;  // MongoDB ID
   title: string;
   content?: string;
-  rawText?: string;
+  rawText?: string;  // Backend verwendet rawText
+  status?: string;
+  preview?: string;
+  structured_resume?: {
+    summary?: {
+      experience?: string;
+      key_aspects?: string[];
+    };
+    personal_statement?: string;
+    career?: Array<{
+      position: string;
+      company: string;
+      time_period: string;
+      tasks: string[];
+      achievements: string[];
+    }>;
+    key_skills?: {
+      items: Array<{
+        category: string;
+        skills: string[];
+      }>;
+    };
+    education?: {
+      items: string[];
+    };
+    languages?: {
+      items: string[];
+    };
+  };
   createdAt: string;
   updatedAt: string;
-  status: string;
-  preview?: string;
-  userId?: string;
 }
 
 export interface ResumeAnalysis {
@@ -91,10 +117,11 @@ export interface JobDescription {
   id: string;
   title: string;
   content: string;
-  company: string;
   createdAt: string;
   updatedAt: string;
   userId: string;
+  preview?: string;
+  status: 'draft' | 'analyzed';
 }
 
 // Credits Types
@@ -112,9 +139,9 @@ export interface CreditHistory {
 
 // API Response Types
 export interface ApiResponse<T> {
-  status: string;
-  message: string;
-  data: T;
+  status: 'success' | 'error';
+  data?: T;
+  message?: string;
 }
 
 // API Error Types

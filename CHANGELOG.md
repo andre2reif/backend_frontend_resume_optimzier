@@ -1,5 +1,31 @@
 # Changelog
 
+## [2025-03-29 10:15] - Bugfix: Resume API und ModalEditResume
+
+### Geändert
+- Verbesserte Fehlerbehandlung in der Resume-API
+- Angepasste URL-Konstruktion für die getById-Methode
+- Verbesserte Debug-Informationen im ModalEditResume
+- Korrekte Verarbeitung der API-Antwort im ModalEditResume
+- Hinzufügung von Fallback-Werten für content und title
+- Verbesserte Anzeige der Debug-Informationen im Modal
+
+### Behoben
+- 422 Unprocessable Entity Fehler bei der Resume-API
+- Fehlende user_id in API-Anfragen
+- Falsche Verarbeitung der API-Antwort im ModalEditResume
+
+## [Unreleased]
+
+### Fixed
+- Korrektur der MongoDB-Collection-Imports in main.py
+- Behebung des Import-Fehlers für count_tokens aus calc.py
+- Korrektur der API-Endpunkte für die Dokumentstrukturierung
+
+### Changed
+- Optimierung der Dokumentstrukturierung mit korrekten Endpunkten
+- Verbesserung der Fehlerbehandlung bei der Token-Zählung
+
 Alle wichtigen Änderungen an diesem Projekt werden in dieser Datei dokumentiert.
 
 Das Format basiert auf [Keep a Changelog](https://keepachangelog.com/de/1.0.0/),
@@ -74,8 +100,6 @@ und dieses Projekt adhäriert zu [Semantic Versioning](https://semver.org/lang/d
 - Typ-Definitionen für API-Responses vervollständigen
 - Error-Handling vereinheitlichen
 - Loading-States optimieren
-
-## [Unreleased]
 
 ### Geändert
 - Verbesserte Fehlerbehandlung in der ATS-Analyse

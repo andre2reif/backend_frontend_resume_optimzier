@@ -12,8 +12,8 @@ router = APIRouter()
 client = OpenAI(api_key=os.getenv("RESUME_OPENAI_API_KEY"))
 
 @router.get("/count")
-async def count_resumes():
-    count = collection_resume.count_documents({})
+async def count_resumes(user_id: str = Query(..., description="User ID to count resumes for")):
+    count = collection_resume.count_documents({"userId": user_id})
     return {"collection": "resumes", "count": count}
 
 @router.post("/create")
@@ -92,41 +92,34 @@ async def view_resumes(user_id: str = Query(..., description="User ID to fetch r
         )
 
 @router.get("/view/{resume_id}")
-async def view_resume_details(
-    resume_id: str = Path(..., description="Die ID des Lebenslaufs"),
-    user_id: str = Query(..., description="User ID to verify ownership")
-):
-    """Gibt die Details eines spezifischen Lebenslaufs zurück."""
+async def get_resume(resume_id: str, user_id: str = Query(..., description="User ID (as string) to restrict access")):
+    """
+    Ruft ein einzelnes Resume anhand seiner ID ab.
+    """
     try:
-        # Suche das Dokument mit der angegebenen ID
-        doc = collection_resume.find_one({"_id": ObjectId(resume_id)})
+        resume = collection_resume.find_one({"_id": ObjectId(resume_id)})
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
         
-        if not doc:
-            raise HTTPException(
-                status_code=404,
-                detail="Lebenslauf nicht gefunden"
-            )
-            
-        # Überprüfe, ob der Benutzer Zugriff hat
-        if doc["userId"] != user_id:
-            raise HTTPException(
-                status_code=403,
-                detail="Keine Berechtigung für diesen Lebenslauf"
-            )
-            
-        # Konvertiere ObjectId in String
-        doc["_id"] = str(doc["_id"])
+        # Sicherheitscheck: Prüfen, ob das Resume zum übergebenen User gehört
+        if str(resume.get("userId", "")) != user_id:
+            raise HTTPException(status_code=403, detail="Access forbidden: Resume does not belong to this user")
         
+        # ObjectId in String umwandeln
+        resume["_id"] = str(resume["_id"])
+        
+        # Formatiere die Antwort
         return {
             "status": "success",
             "message": "Lebenslauf erfolgreich geladen",
-            "data": doc
+            "data": {
+                "_id": resume["_id"],
+                "title": resume["title"],
+                "content": resume.get("rawText", ""),
+                "structured_resume": resume.get("structured_resume", {}),
+                "createdAt": resume["createdAt"].isoformat(),
+                "updatedAt": resume["updatedAt"].isoformat()
+            }
         }
-            
     except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(
-            status_code=500,
-            detail=f"Fehler beim Laden des Lebenslaufs: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=str(e))

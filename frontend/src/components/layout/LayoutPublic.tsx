@@ -4,20 +4,18 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import { Toaster } from 'react-hot-toast';
-import { signOut } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard' },
-  { name: 'Lebenslauf', href: '/resume' },
-  { name: 'Anschreiben', href: '/coverletter' },
-  { name: 'Stellenausschreibung', href: '/jobdescription' },
-  { name: 'Credits', href: '/credits' },
+  { name: 'Produkt', href: '/product' },
+  { name: 'Pricing', href: '/pricing' },
+  { name: 'Über uns', href: '/about' },
 ];
 
-export default function LayoutMain({ children }: { children: React.ReactNode }) {
+export default function LayoutPublic({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/' });
@@ -55,13 +53,38 @@ export default function LayoutMain({ children }: { children: React.ReactNode }) 
               </Link>
             ))}
           </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <button
-              onClick={handleSignOut}
-              className="text-sm font-semibold leading-6 text-base-content hover:text-primary"
-            >
-              Abmelden
-            </button>
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:gap-x-4">
+            {session ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="text-sm font-semibold leading-6 text-base-content hover:text-primary"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-sm font-semibold leading-6 text-base-content hover:text-primary"
+                >
+                  Abmelden
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/signin"
+                  className="text-sm font-semibold leading-6 text-base-content hover:text-primary"
+                >
+                  Anmelden
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary/90"
+                >
+                  Registrieren
+                </Link>
+              </>
+            )}
           </div>
         </nav>
         {/* Mobile menu */}
@@ -96,15 +119,43 @@ export default function LayoutMain({ children }: { children: React.ReactNode }) 
                       {item.name}
                     </Link>
                   ))}
-                  <button
-                    onClick={() => {
-                      handleSignOut();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="-mx-3 block w-full rounded-lg px-3 py-2 text-base font-semibold leading-7 text-base-content hover:text-primary text-left"
-                  >
-                    Abmelden
-                  </button>
+                  {session ? (
+                    <>
+                      <Link
+                        href="/dashboard"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-base-content hover:text-primary"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <button
+                        onClick={() => {
+                          handleSignOut();
+                          setMobileMenuOpen(false);
+                        }}
+                        className="-mx-3 block w-full rounded-lg px-3 py-2 text-base font-semibold leading-7 text-base-content hover:text-primary text-left"
+                      >
+                        Abmelden
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/auth/signin"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-base-content hover:text-primary"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Anmelden
+                      </Link>
+                      <Link
+                        href="/auth/register"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-base-content hover:text-primary"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Registrieren
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -135,8 +186,6 @@ export default function LayoutMain({ children }: { children: React.ReactNode }) 
           </div>
         </div>
       </footer>
-
-      <Toaster position="bottom-right" />
     </div>
   );
 } 

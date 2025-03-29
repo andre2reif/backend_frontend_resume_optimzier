@@ -14,8 +14,8 @@ router = APIRouter()
 client = OpenAI(api_key=os.getenv("RESUME_OPENAI_API_KEY"))
 
 @router.get("/count")
-async def count_analysis():
-    count = collection_analysis.count_documents({})
+async def count_analysis(user_id: str = Query(..., description="User ID to count analyses for")):
+    count = collection_analysis.count_documents({"userId": user_id})
     return {"collection": "analysis", "count": count}
 
 @router.get("/view/{analysis_id}")

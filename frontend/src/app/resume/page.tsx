@@ -8,47 +8,71 @@ import { resumeApi } from '@/lib/api';
 import { Resume } from '@/types/api';
 import toast from 'react-hot-toast';
 import FileUpload from '@/components/FileUpload';
+import LayoutMain from '@/components/layout/LayoutMain';
+import CreateResumeModal from '@/components/resume/CreateResumeModal';
+import { structureMultipleDocuments } from '@/lib/services/structureService';
+import ModalEditResume from '@/components/resume/ModalEditResume';
 
 export default function ResumeListPage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [resumes, setResumes] = useState<Resume[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isStructuring, setIsStructuring] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
 
-  // Memoisierte fetchResumes Funktion
   const fetchResumes = useCallback(async () => {
     try {
+      setIsLoading(true);
+      setError(null);
       const response = await resumeApi.getAll();
-      console.log('Lebensläufe geladen:', response.status);
+      console.log('Resumes response:', response); // Debug log
       
-      if (response.status === "success" && Array.isArray(response.data)) {
+      if (response.status === 'success' && response.data) {
         setResumes(response.data);
+        
+        // Prüfe auf unstrukturierte Dokumente
+        const unstructuredDocs = response.data.filter(doc => doc.status === 'unstructured');
+        if (unstructuredDocs.length > 0 && session?.user?.email) {
+          setIsStructuring(true);
+          await structureMultipleDocuments(
+            unstructuredDocs.map(doc => ({
+              id: doc.id,
+              type: 'resume',
+              status: doc.status
+            })),
+            session.user.email
+          );
+          // Lade die Daten nach der Strukturierung neu
+          const updatedResponse = await resumeApi.getAll();
+          if (updatedResponse.status === 'success') {
+            setResumes(updatedResponse.data);
+          }
+          setIsStructuring(false);
+        }
       } else {
-        console.error('Unerwartetes Datenformat:', response);
-        setResumes([]);
+        throw new Error('Fehler beim Laden der Lebensläufe');
       }
-    } catch (error: any) {
-      console.error('Fehler beim Laden der Lebensläufe:', error);
+    } catch (err) {
+      console.error('Fehler beim Laden:', err);
+      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
       toast.error('Fehler beim Laden der Lebensläufe');
       setResumes([]);
+    } finally {
+      setIsLoading(false);
     }
-  }, []); // Keine Abhängigkeiten, da keine externen Variablen verwendet werden
+  }, [session?.user?.email]);
 
   useEffect(() => {
-    if (!session?.user?.email) {
-      router.push('/auth/signin');
-      return;
+    if (status === 'authenticated' && session?.user?.email) {
+      fetchResumes();
+    } else if (status === 'unauthenticated') {
+      router.push('/signin');
     }
-
-    const loadInitialData = async () => {
-      setIsLoading(true);
-      await fetchResumes();
-      setIsLoading(false);
-    };
-
-    loadInitialData();
-  }, [session?.user?.email, router, fetchResumes]);
+  }, [status, session, router, fetchResumes]);
 
   const handleFileUpload = async (content: string, filename: string) => {
     if (!session?.user?.email) {
@@ -68,7 +92,7 @@ export default function ResumeListPage() {
         await fetchResumes();
         toast.success('Lebenslauf erfolgreich erstellt');
       } else {
-        throw new Error('Keine Daten vom Server erhalten');
+        throw new Error('Fehler beim Erstellen');
       }
     } catch (error: any) {
       console.error('Fehler beim Erstellen:', error);
@@ -92,94 +116,139 @@ export default function ResumeListPage() {
     }
   };
 
-  if (!session) {
-    return null;
+  const handleEdit = (resumeId: string) => {
+    console.log('Bearbeite Lebenslauf mit ID:', resumeId); // Debug log
+    setEditingResumeId(resumeId);
+  };
+
+  const handleSave = async (updatedResume: Resume) => {
+    try {
+      const response = await resumeApi.update(updatedResume.id, updatedResume);
+      if (response.status === 'success' && response.data) {
+        setResumes(resumes.map(resume => 
+          resume.id === response.data.id ? response.data : resume
+        ));
+        toast.success('Lebenslauf erfolgreich aktualisiert');
+      } else {
+        throw new Error('Fehler beim Speichern');
+      }
+    } catch (err) {
+      console.error('Speichern Fehler:', err);
+      toast.error('Fehler beim Speichern des Lebenslaufs');
+    }
+  };
+
+  if (status === 'loading' || isLoading) {
+    return (
+      <LayoutMain>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="loading loading-spinner loading-lg"></div>
+        </div>
+      </LayoutMain>
+    );
   }
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="loading loading-spinner loading-lg"></div>
-      </div>
+      <LayoutMain>
+        <div className="alert alert-error m-4">
+          <span>{error}</span>
+        </div>
+      </LayoutMain>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="sm:flex sm:items-center">
-        <div className="sm:flex-auto">
-          <h1 className="text-2xl font-semibold text-base-content">Meine Lebensläufe</h1>
-          <p className="mt-2 text-sm text-base-content/80">
-            Verwalten Sie Ihre Lebensläufe und optimieren Sie sie für ATS-Systeme.
-          </p>
-        </div>
-      </div>
-
-      <div className="overflow-hidden bg-base-200 shadow sm:rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <h3 className="text-lg font-medium leading-6 text-base-content">
-            Neuen Lebenslauf hochladen
-          </h3>
-          <div className="mt-2 max-w-xl text-sm text-base-content/80">
-            <p>Laden Sie einen bestehenden Lebenslauf hoch oder erstellen Sie einen neuen.</p>
+    <LayoutMain>
+      <div className="space-y-6">
+        <div className="sm:flex sm:items-center">
+          <div className="sm:flex-auto">
+            <h1 className="text-2xl font-semibold text-base-content">Meine Lebensläufe</h1>
+            <p className="mt-2 text-sm text-base-content/80">
+              Verwalten Sie Ihre Lebensläufe und optimieren Sie sie für Ihre Bewerbungen.
+            </p>
+            {isStructuring && (
+              <p className="mt-2 text-sm text-warning">
+                Lebensläufe werden strukturiert... Dies kann einige Minuten dauern.
+              </p>
+            )}
           </div>
-          <div className="mt-5">
-            <FileUpload onUpload={handleFileUpload} disabled={isUploading} />
+          <div className="mt-4 sm:ml-16 sm:mt-0">
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="btn btn-primary"
+            >
+              Neuer Lebenslauf
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="overflow-hidden bg-base-200 shadow sm:rounded-lg">
-        <ul className="divide-y divide-base-content/10">
-          {resumes.map((resume) => (
-            <li key={resume.id} className="px-4 py-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h3 className="text-sm font-medium text-base-content">{resume.title}</h3>
-                  <p className="mt-1 text-sm text-base-content/80">
-                    Erstellt am {new Date(resume.createdAt).toLocaleDateString('de-DE')}
+        <div className="overflow-hidden bg-base-200 shadow sm:rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg font-medium leading-6 text-base-content">
+              Neuen Lebenslauf hochladen
+            </h3>
+            <div className="mt-2 max-w-xl text-sm text-base-content/80">
+              <p>Laden Sie einen bestehenden Lebenslauf hoch oder erstellen Sie einen neuen.</p>
+            </div>
+            <div className="mt-5">
+              <FileUpload onUpload={handleFileUpload} disabled={isUploading} />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {resumes.length > 0 ? (
+            resumes.map((resume) => (
+              <div key={resume.id} className="card bg-base-100 shadow-xl">
+                <div className="card-body">
+                  <h2 className="card-title">{resume.title}</h2>
+                  <p className="text-sm text-gray-500">
+                    Erstellt am {new Date(resume.createdAt).toLocaleDateString()}
                   </p>
-                  {resume.preview && (
-                    <p className="mt-1 text-sm text-base-content/60 line-clamp-2">
-                      {resume.preview}
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs text-base-content/40">
-                    Status: {resume.status}
+                  <p className="text-sm text-gray-500">
+                    Status: {resume.status || 'unstructured'}
                   </p>
-                </div>
-                <div className="ml-4 flex flex-shrink-0 space-x-2">
-                  <Link
-                    href={`/resume/${resume.id}`}
-                    className="btn btn-sm btn-primary"
-                  >
-                    Bearbeiten
-                  </Link>
-                  <Link
-                    href={`/resume/${resume.id}/analyze`}
-                    className="btn btn-sm btn-secondary"
-                  >
-                    Analysieren
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(resume.id)}
-                    className="btn btn-sm btn-error"
-                  >
-                    Löschen
-                  </button>
+                  {/* Debug-Info */}
+                  <p className="text-xs text-gray-400">ID: {resume.id}</p>
+                  <div className="card-actions justify-end">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => {
+                        console.log('Clicked resume:', resume); // Debug log
+                        if (resume.id) {
+                          handleEdit(resume.id);
+                        } else {
+                          console.error('Keine ID für Resume:', resume);
+                        }
+                      }}
+                    >
+                      Bearbeiten
+                    </button>
+                  </div>
                 </div>
               </div>
-            </li>
-          ))}
-          {resumes.length === 0 && (
-            <li className="px-4 py-4 sm:px-6">
-              <p className="text-sm text-base-content/80">
-                Sie haben noch keine Lebensläufe erstellt.
-              </p>
-            </li>
+            ))
+          ) : (
+            <div key="empty" className="col-span-full text-center">
+              <p>Keine Lebensläufe vorhanden</p>
+            </div>
           )}
-        </ul>
+        </div>
       </div>
-    </div>
+
+      <CreateResumeModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={fetchResumes}
+      />
+
+      <ModalEditResume
+        isOpen={!!editingResumeId}
+        onClose={() => setEditingResumeId(null)}
+        resumeId={editingResumeId || ''}
+        onSave={handleSave}
+      />
+    </LayoutMain>
   );
 } 
