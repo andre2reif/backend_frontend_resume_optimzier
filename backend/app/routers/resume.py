@@ -214,3 +214,38 @@ async def patch_resume(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/delete/{resume_id}")
+async def delete_resume(
+    resume_id: str,
+    user_id: str = Query(..., description="User ID (as string) to restrict access")
+):
+    """
+    Löscht einen Lebenslauf anhand seiner ID.
+    
+    - Validiert die Benutzer-Berechtigung
+    - Gibt 404 zurück, wenn der Lebenslauf nicht gefunden wurde
+    - Gibt 403 zurück, wenn der Lebenslauf nicht dem Benutzer gehört
+    """
+    try:
+        # Prüfe, ob der Lebenslauf existiert und dem Benutzer gehört
+        resume = collection_resume.find_one({"_id": ObjectId(resume_id)})
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        if str(resume.get("userId", "")) != user_id:
+            raise HTTPException(status_code=403, detail="Access forbidden: Resume does not belong to this user")
+        
+        # Führe das Löschen durch
+        result = collection_resume.delete_one({"_id": ObjectId(resume_id)})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        return {
+            "status": "success",
+            "message": "Lebenslauf erfolgreich gelöscht"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -12,6 +12,7 @@ import LayoutMain from '@/components/layout/LayoutMain';
 import CreateResumeModal from '@/components/resume/CreateResumeModal';
 import { structureMultipleDocuments } from '@/lib/services/structureService';
 import ModalEditResume from '@/components/resume/ModalEditResume';
+import CardResume from '@/components/CardResume';
 
 export default function ResumeListPage() {
   const { data: session, status } = useSession();
@@ -22,8 +23,9 @@ export default function ResumeListPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isStructuring, setIsStructuring] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
+  const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [processingResumes, setProcessingResumes] = useState<Set<string>>(new Set());
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchResumes = useCallback(async () => {
     try {
@@ -52,7 +54,7 @@ export default function ResumeListPage() {
           ).then(async () => {
             // Lade die Daten nach der Strukturierung neu
             const updatedResponse = await resumeApi.getAll();
-            if (updatedResponse.status === 'success') {
+            if (updatedResponse.status === 'success' && updatedResponse.data) {
               const updatedSortedResumes = updatedResponse.data.sort((a, b) => 
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
               );
@@ -101,12 +103,19 @@ export default function ResumeListPage() {
         content,
         status: 'processing',
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         userId: session.user.email
       };
       
       // Füge temporäre Card am Anfang der Liste hinzu
       setResumes(prevResumes => [tempResume, ...prevResumes]);
-      setProcessingResumes(prev => new Set(prev).add(tempResume.id));
+      setProcessingResumes(prev => {
+        const newSet = new Set(prev);
+        if (tempResume.id) {
+          newSet.add(tempResume.id);
+        }
+        return newSet;
+      });
 
       const response = await resumeApi.create({
         title,
@@ -117,12 +126,14 @@ export default function ResumeListPage() {
         // Ersetze temporäre Card durch echte Daten
         setResumes(prevResumes => 
           prevResumes.map(resume => 
-            resume.id === tempResume.id ? response.data : resume
-          )
+            resume.id === tempResume.id && response.data ? response.data : resume
+          ).filter((resume): resume is Resume => resume !== undefined)
         );
         setProcessingResumes(prev => {
           const newSet = new Set(prev);
-          newSet.delete(tempResume.id);
+          if (tempResume.id) {
+            newSet.delete(tempResume.id);
+          }
           return newSet;
         });
         toast.success('Lebenslauf erfolgreich erstellt');
@@ -151,63 +162,28 @@ export default function ResumeListPage() {
 
     try {
       await resumeApi.delete(id);
-      await fetchResumes();
+      setResumes(resumes.filter(resume => resume._id !== id && resume.id !== id));
       toast.success('Lebenslauf erfolgreich gelöscht');
     } catch (error) {
       toast.error('Fehler beim Löschen des Lebenslaufs');
     }
   };
 
-  const handleEdit = (resumeId: string) => {
-    console.log('Bearbeite Lebenslauf mit ID:', resumeId); // Debug log
-    setEditingResumeId(resumeId);
+  const handleEdit = (id: string) => {
+    setSelectedResumeId(id);
+    setIsModalOpen(true);
   };
 
-  const handleSave = async (updatedResume: Resume) => {
-    try {
-      // Verwende _id statt id für MongoDB
-      const resumeId = updatedResume._id || updatedResume.id;
-      if (!resumeId) {
-        throw new Error('Keine gültige ID für den Lebenslauf gefunden');
-      }
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedResumeId(null);
+  };
 
-      // Finde den ursprünglichen Lebenslauf
-      const originalResume = resumes.find(resume => 
-        resume._id === resumeId || resume.id === resumeId
-      );
-
-      if (!originalResume) {
-        throw new Error('Ursprünglicher Lebenslauf nicht gefunden');
-      }
-
-      const response: ApiResponse<Resume> = await resumeApi.patch(resumeId, originalResume, updatedResume);
-      
-      if (response.status === 'success' && response.data) {
-        // Aktualisiere den Lebenslauf in der lokalen State
-        setResumes(prevResumes => 
-          prevResumes.map(resume => {
-            if (resume._id === resumeId || resume.id === resumeId) {
-              // Behalte die bestehenden Eigenschaften und überschreibe sie mit den neuen Daten
-              return {
-                ...resume,
-                ...response.data,
-                _id: resumeId, // Stelle sicher, dass die ID erhalten bleibt
-                id: resumeId
-              };
-            }
-            return resume;
-          })
-        );
-        
-        setEditingResumeId(null); // Schließe das Modal
-        toast.success('Lebenslauf erfolgreich aktualisiert');
-      } else {
-        throw new Error('Fehler beim Speichern');
-      }
-    } catch (err) {
-      console.error('Speichern Fehler:', err);
-      toast.error('Es ist ein Fehler aufgetreten');
-    }
+  const handleResumeUpdate = (updatedResume: Resume) => {
+    setResumes(resumes.map(resume => 
+      resume._id === updatedResume._id || resume.id === updatedResume._id ? updatedResume : resume
+    ));
+    handleModalClose();
   };
 
   if (status === 'loading' || isLoading) {
@@ -272,60 +248,13 @@ export default function ResumeListPage() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {resumes.length > 0 ? (
             resumes.map((resume) => (
-              <div key={resume.id} className="card bg-base-100 shadow-xl">
-                <div className="card-body">
-                  <h2 className="card-title">{resume.title}</h2>
-                  <p className="text-sm text-gray-500">
-                    Erstellt am {new Date(resume.createdAt).toLocaleDateString()}
-                  </p>
-                  <div className="space-y-2">
-                    {resume.status === 'unstructured' ? (
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm text-warning">Wird strukturiert...</span>
-                          <div className="loading loading-spinner loading-sm"></div>
-                        </div>
-                        <progress className="progress progress-warning w-full"></progress>
-                      </div>
-                    ) : resume.status === 'structured_complete' ? (
-                      <p className="text-sm text-success flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        Strukturiert
-                      </p>
-                    ) : (
-                      <p className="text-sm text-error flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                        Fehler bei der Strukturierung
-                      </p>
-                    )}
-                  </div>
-                  <div className="card-actions justify-end">
-                    {resume.id && processingResumes.has(resume.id) ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="loading loading-spinner loading-sm"></div>
-                        <span className="text-sm text-gray-500">Wird verarbeitet...</span>
-                      </div>
-                    ) : (
-                      <button
-                        className="btn btn-primary"
-                        disabled={resume.status === 'unstructured'}
-                        onClick={() => {
-                          const resumeId = resume._id || resume.id;
-                          if (resumeId) {
-                            handleEdit(resumeId);
-                          }
-                        }}
-                      >
-                        {resume.status === 'unstructured' ? 'Wird vorbereitet...' : 'Bearbeiten'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <CardResume
+                key={resume._id || resume.id}
+                resume={resume}
+                processingResumes={processingResumes}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
             ))
           ) : (
             <div key="empty" className="col-span-full text-center">
@@ -341,12 +270,14 @@ export default function ResumeListPage() {
         onSuccess={fetchResumes}
       />
 
-      <ModalEditResume
-        isOpen={!!editingResumeId}
-        onClose={() => setEditingResumeId(null)}
-        resumeId={editingResumeId || ''}
-        onSave={handleSave}
-      />
+      {isModalOpen && selectedResumeId && (
+        <ModalEditResume
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          resumeId={selectedResumeId}
+          onSave={handleResumeUpdate}
+        />
+      )}
     </LayoutMain>
   );
 } 

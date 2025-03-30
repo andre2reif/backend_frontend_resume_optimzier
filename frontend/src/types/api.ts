@@ -7,6 +7,7 @@ export interface Resume {
   rawText?: string;  // Backend verwendet rawText
   status?: string;
   preview?: string;
+  userId?: string;  // Hinzugefügt für die Benutzer-ID
   structured_resume?: {
     summary?: {
       experience?: string;
