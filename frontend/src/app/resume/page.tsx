@@ -25,6 +25,7 @@ export default function ResumeListPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedResumeId, setSelectedResumeId] = useState<string | null>(null);
   const [processingResumes, setProcessingResumes] = useState<Set<string>>(new Set());
+  const [deletingResumes, setDeletingResumes] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchResumes = useCallback(async () => {
@@ -156,17 +157,59 @@ export default function ResumeListPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Möchten Sie diesen Lebenslauf wirklich löschen?')) {
-      return;
-    }
-
     try {
+      // Prüfe, ob der Lebenslauf noch in der Liste existiert
+      const resumeExists = resumes.some(resume => resume._id === id || resume.id === id);
+      if (!resumeExists) {
+        console.log('Lebenslauf wurde bereits gelöscht');
+        return;
+      }
+
       await resumeApi.delete(id);
-      setResumes(resumes.filter(resume => resume._id !== id && resume.id !== id));
-      toast.success('Lebenslauf erfolgreich gelöscht');
-    } catch (error) {
+      
+      // Aktualisiere die Liste und das deletingResumes Set
+      setResumes(prevResumes => {
+        const newResumes = prevResumes.filter(resume => resume._id !== id && resume.id !== id);
+        // Wenn die Liste leer ist, leere auch das deletingResumes Set
+        if (newResumes.length === 0) {
+          setDeletingResumes(new Set());
+        }
+        return newResumes;
+      });
+    } catch (error: any) {
+      // Wenn der Fehler ein 404 ist, ignorieren wir ihn, da der Lebenslauf bereits gelöscht wurde
+      if (error.message?.includes('404') || error.message?.includes('not found')) {
+        console.log('Lebenslauf wurde bereits gelöscht');
+        setResumes(prevResumes => {
+          const newResumes = prevResumes.filter(resume => resume._id !== id && resume.id !== id);
+          // Wenn die Liste leer ist, leere auch das deletingResumes Set
+          if (newResumes.length === 0) {
+            setDeletingResumes(new Set());
+          }
+          return newResumes;
+        });
+        return;
+      }
+      
+      console.error('Fehler beim Löschen des Lebenslaufs:', error);
       toast.error('Fehler beim Löschen des Lebenslaufs');
     }
+  };
+
+  const handleStartDelete = (id: string) => {
+    setDeletingResumes(prev => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
+  };
+
+  const handleCancelDelete = (id: string) => {
+    setDeletingResumes(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
   };
 
   const handleEdit = (id: string) => {
@@ -252,8 +295,11 @@ export default function ResumeListPage() {
                 key={resume._id || resume.id}
                 resume={resume}
                 processingResumes={processingResumes}
+                deletingResumes={deletingResumes}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onStartDelete={handleStartDelete}
+                onCancelDelete={handleCancelDelete}
               />
             ))
           ) : (

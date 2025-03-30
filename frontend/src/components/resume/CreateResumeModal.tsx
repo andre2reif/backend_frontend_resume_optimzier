@@ -28,11 +28,10 @@ export default function CreateResumeModal({ isOpen, onClose, onSuccess }: Create
       setIsSubmitting(true);
       const response = await resumeApi.create({
         title,
-        rawText,
+        content: rawText,
       });
 
       if (response.status === 'success') {
-        toast.success('Lebenslauf erfolgreich erstellt');
         onSuccess();
         handleClose();
       } else {

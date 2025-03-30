@@ -1,19 +1,100 @@
 'use client';
 
 import { Resume } from '@/types/api';
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
 interface CardResumeProps {
   resume: Resume;
   processingResumes: Set<string>;
+  deletingResumes: Set<string>;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
+  onStartDelete: (id: string) => void;
+  onCancelDelete: (id: string) => void;
 }
 
-export default function CardResume({ resume, processingResumes, onEdit, onDelete }: CardResumeProps) {
+function truncateTitle(title: string, maxLength: number = 20): string {
+  if (title.length <= maxLength) return title;
+  return `${title.substring(0, maxLength)}...`;
+}
+
+export default function CardResume({ resume, processingResumes, deletingResumes, onEdit, onDelete, onStartDelete, onCancelDelete }: CardResumeProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [toastId, setToastId] = useState<string | undefined>(undefined);
+
+  const handleDelete = () => {
+    if (!resume._id && !resume.id) {
+      toast.error('Lebenslauf wurde bereits gelöscht');
+      return;
+    }
+
+    const resumeId = resume._id || resume.id;
+    if (!resumeId) return;
+
+    setIsDeleting(true);
+    onStartDelete(resumeId);
+
+    const newToastId = toast.loading(
+      <div className="flex items-center gap-2 max-w-[300px]">
+        <span className="truncate">"{truncateTitle(resume.title)}" wird gelöscht...</span>
+        <button
+          className="link link-primary whitespace-nowrap"
+          onClick={() => {
+            setIsDeleting(false);
+            toast.dismiss(newToastId);
+            setToastId(undefined);
+            onCancelDelete(resumeId);
+          }}
+        >
+          Rückgängig
+        </button>
+      </div>,
+      {
+        position: 'bottom-center',
+        duration: 5000,
+        className: 'toast-start',
+      }
+    );
+
+    setToastId(newToastId);
+  };
+
+  useEffect(() => {
+    let deleteTimer: NodeJS.Timeout;
+
+    if (isDeleting) {
+      const resumeId = resume._id || resume.id;
+      if (resumeId) {
+        deleteTimer = setTimeout(() => {
+          onDelete(resumeId);
+          if (toastId) {
+            toast.dismiss(toastId);
+            setToastId(undefined);
+          }
+        }, 5000);
+      }
+    }
+
+    return () => {
+      if (deleteTimer) {
+        clearTimeout(deleteTimer);
+      }
+    };
+  }, [isDeleting, resume._id, resume.id, onDelete, toastId]);
+
+  // Wenn der Lebenslauf im Löschprozess ist oder bereits gelöscht wurde, zeige nichts an
+  const resumeId = resume._id || resume.id;
+  if (!resumeId || deletingResumes.has(resumeId)) {
+    return null;
+  }
+
   return (
     <div className="card bg-base-100 shadow-xl">
       <div className="card-body">
-        <h2 className="card-title">{resume.title}</h2>
+        <h2 className="card-title truncate" title={resume.title}>
+          {truncateTitle(resume.title)}
+        </h2>
         <p className="text-sm text-gray-500">
           Erstellt am {new Date(resume.createdAt).toLocaleDateString()}
         </p>
@@ -52,12 +133,8 @@ export default function CardResume({ resume, processingResumes, onEdit, onDelete
             <>
               <button
                 className="btn btn-error btn-sm"
-                onClick={() => {
-                  const resumeId = resume._id || resume.id;
-                  if (resumeId) {
-                    onDelete(resumeId);
-                  }
-                }}
+                onClick={handleDelete}
+                disabled={isDeleting}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -65,7 +142,7 @@ export default function CardResume({ resume, processingResumes, onEdit, onDelete
               </button>
               <button
                 className="btn btn-primary"
-                disabled={resume.status === 'unstructured'}
+                disabled={resume.status === 'unstructured' || isDeleting}
                 onClick={() => {
                   const resumeId = resume._id || resume.id;
                   if (resumeId) {

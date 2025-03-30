@@ -23,7 +23,13 @@ export default async function RootLayout({
       <body className={inter.className}>
         <SessionProvider session={session}>
           <main className="min-h-screen">
-            <Toaster position="top-center" />
+            <Toaster 
+              position="bottom-center"
+              toastOptions={{
+                className: 'toast-start',
+                duration: 5000,
+              }}
+            />
             {children}
           </main>
         </SessionProvider>
