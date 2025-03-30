@@ -180,15 +180,27 @@ export default function ResumeListPage() {
         throw new Error('Ursprünglicher Lebenslauf nicht gefunden');
       }
 
-      console.log('Patching resume with ID:', resumeId); // Debug log
       const response: ApiResponse<Resume> = await resumeApi.patch(resumeId, originalResume, updatedResume);
       
       if (response.status === 'success' && response.data) {
-        const updatedResume = response.data;
-        setResumes(prevResumes => prevResumes.map(resume => 
-          (resume._id === updatedResume._id || resume.id === updatedResume.id) ? updatedResume : resume
-        ));
-        toast.success('Erfolgreich geupdatet');
+        // Aktualisiere den Lebenslauf in der lokalen State
+        setResumes(prevResumes => 
+          prevResumes.map(resume => {
+            if (resume._id === resumeId || resume.id === resumeId) {
+              // Behalte die bestehenden Eigenschaften und überschreibe sie mit den neuen Daten
+              return {
+                ...resume,
+                ...response.data,
+                _id: resumeId, // Stelle sicher, dass die ID erhalten bleibt
+                id: resumeId
+              };
+            }
+            return resume;
+          })
+        );
+        
+        setEditingResumeId(null); // Schließe das Modal
+        toast.success('Lebenslauf erfolgreich aktualisiert');
       } else {
         throw new Error('Fehler beim Speichern');
       }

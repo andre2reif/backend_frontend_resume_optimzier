@@ -1,6 +1,29 @@
 # Changelog
 
-## [2024-03-19] - 11:45 Uhr
+## [2024-03-29] - 15:30 Uhr
+
+### Verbessert
+- Optimierte Lebenslauf-Aktualisierung im Frontend
+  - Verbesserte State-Management-Logik für konsistente Datenaktualisierung
+  - Automatisches Schließen des Bearbeitungsmodals nach erfolgreicher Aktualisierung
+  - Sofortige visuelle Aktualisierung der Kartenansicht
+
+### Technisch
+- Implementierung robuster ID-Validierung (_id und id Kompatibilität)
+- Verbesserte Fehlerbehandlung mit spezifischen Fehlermeldungen
+- Optimierte TypeScript-Integration für bessere Typsicherheit
+
+### Commit Message
+```
+feat(resume): Verbesserte Lebenslauf-Aktualisierung
+
+- Optimierte State-Management-Logik
+- Automatisches Modal-Schließen nach Update
+- Verbesserte Fehlerbehandlung und ID-Validierung
+- TypeScript-Integration optimiert
+```
+
+## [2024-03-29] - 11:45 Uhr
 
 ### Verbessert
 - Upload und Strukturierungsprozess der Lebensläufe optimiert
