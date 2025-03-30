@@ -1,5 +1,29 @@
 # Changelog
 
+## [2024-03-19] - 16:45 Uhr
+
+### Hinzugefügt
+- Delete-Endpunkt für Lebensläufe implementiert
+  - Neuer DELETE-Endpunkt `/api/v1/resumes/delete/{resume_id}`
+  - Benutzer-Berechtigungsprüfung integriert
+  - Fehlerbehandlung für nicht gefundene Lebensläufe
+
+### Verbessert
+- Frontend-Komponenten optimiert
+  - CardResume als separate Komponente ausgelagert
+  - Lösch-Button mit Bestätigungsdialog hinzugefügt
+  - Verbesserte Fehlerbehandlung im Frontend
+
+### Technisch
+- TypeScript-Integration verbessert
+- API-Endpunkte konsolidiert
+- Sicherheitsvalidierung implementiert
+
+### Commit Message
+```
+Feature: Resume delete - Implementierung des Delete-Endpunkts für Lebensläufe
+```
+
 ## [2024-03-29] - 15:30 Uhr
 
 ### Verbessert
