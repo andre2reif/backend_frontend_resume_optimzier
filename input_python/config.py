@@ -89,7 +89,7 @@ COVERLETTER_SCHEMA = """
 }
 """
 
-JOBDESCRIPTION_SCHEMA = """
+jobdescription_SCHEMA = """
 {
   "job_title": "",
   "company": "",

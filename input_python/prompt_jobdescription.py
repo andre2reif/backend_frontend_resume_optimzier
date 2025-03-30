@@ -1,8 +1,8 @@
 import json
-from config import JOBDESCRIPTION_SCHEMA  # oder SCHEMAS["resume"]
+from config import jobdescription_SCHEMA  # oder SCHEMAS["resume"]
 
 def get_prompt_messages(resume_content: dict, language: str = "en") -> list:
-    structure = JOBDESCRIPTION_SCHEMA
+    structure = jobdescription_SCHEMA
     input_text = json.dumps(resume_content, ensure_ascii=False, indent=2)
     system_prompts = {
         "de": (

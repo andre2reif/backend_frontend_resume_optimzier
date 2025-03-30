@@ -10,7 +10,7 @@ class ApplicationProcess(BaseModel):
     contact_details: str
     steps_to_apply: str
 
-class JobDescription(BaseModel):
+class jobdescription(BaseModel):
     job_title: str
     company: str
     location: str

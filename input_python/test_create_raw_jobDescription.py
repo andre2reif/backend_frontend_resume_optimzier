@@ -129,12 +129,12 @@ Startup
         "updatedAt": datetime.utcnow()
     }
 
-    result = db["jobPostings"].insert_one(test_job_posting)
+    result = db["jobdescriptions"].insert_one(test_job_posting)
     print(f"✅ Job Posting eingefügt mit _id: {result.inserted_id}")
     return result.inserted_id
 
 if __name__ == "__main__":
     client = connect_to_db()
     if client:
-        db = client["jobposting_db"]  # Datenbankname geändert
+        db = client["jobdescription_db"]  # Datenbankname geändert
         insert_test_job_posting(db)

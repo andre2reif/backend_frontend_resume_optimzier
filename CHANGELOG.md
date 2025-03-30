@@ -1,6 +1,25 @@
 # Changelog
 
-## [2024-03-19] - 16:45 Uhr
+
+## [2024-03-30] Fix: ID-Referenzierung in Coverletter-Komponenten
+
+### Verbesserungen
+- Konsistente Verwendung von `id` statt `_id` in allen Coverletter-Komponenten
+- Korrektur der TypeScript-Typen in der API-Definition
+- Implementierung von Filterung für ungültige IDs
+- Behebung der React Key-Warnung in der Coverletter-Liste
+
+### Technische Details
+- Anpassung des `CoverLetter`-Interface in `api.ts`
+- Aktualisierung der `CardCoverletter`-Komponente
+- Korrektur der ID-Referenzen in der `page.tsx`
+- Implementierung von Sicherheitsüberprüfungen für Dokument-IDs
+
+### Status
+✅ Implementiert und getestet
+
+
+## [2024-03-29] - 16:45 Uhr
 
 ### Hinzugefügt
 - Delete-Endpunkt für Lebensläufe implementiert
@@ -135,11 +154,11 @@ und dieses Projekt adhäriert zu [Semantic Versioning](https://semver.org/lang/d
 
 ### Geändert
 - Verbesserte Fehlerbehandlung in der ATS-Analyse
-- Korrektur der JobDescription-Verarbeitung in der Analyse-Route
+- Korrektur der jobdescription-Verarbeitung in der Analyse-Route
 - Optimierte Datenbankabfragen für bessere Performance
 
 ### Behoben
-- Fehler bei der Verarbeitung der strukturierten JobDescription-Daten
+- Fehler bei der Verarbeitung der strukturierten jobdescription-Daten
 - Problem mit der ObjectId-Serialisierung in der Analyse-Response
 - Fehlerhafte Parameterübergabe in der ATS-Analyse
 
@@ -173,11 +192,11 @@ und dieses Projekt adhäriert zu [Semantic Versioning](https://semver.org/lang/d
 
 ### Geändert
 - Verbesserte Fehlerbehandlung in der ATS-Analyse
-- Korrektur der JobDescription-Verarbeitung in der Analyse-Route
+- Korrektur der jobdescription-Verarbeitung in der Analyse-Route
 - Optimierte Datenbankabfragen für bessere Performance
 
 ### Behoben
-- Fehler bei der Verarbeitung der strukturierten JobDescription-Daten
+- Fehler bei der Verarbeitung der strukturierten jobdescription-Daten
 - Problem mit der ObjectId-Serialisierung in der Analyse-Response
 - Fehlerhafte Parameterübergabe in der ATS-Analyse
 

@@ -69,52 +69,56 @@ export interface ResumeAnalysis {
 }
 
 // Cover Letter Types
+export interface StructuredCoverLetter {
+  cover_letter: {
+    sender: {
+      name: string;
+      address: string;
+      phone: string;
+      email: string;
+    };
+    recipient: {
+      name: string;
+      company: string;
+      address: string;
+    };
+    date: string;
+    subject: string;
+    reference: string;
+    salutation: string;
+    paragraphs: {
+      introduction: string;
+      motivation: string;
+      experience_summary: string;
+      company_alignment: string;
+      added_value: string;
+      salary_expectation: string;
+      closing: string;
+      signature: string;
+    };
+  };
+}
+
 export interface CoverLetter {
-  _id: string;
-  userId: string;
+  id: string;
+  title: string;
   rawText: string;
-  language: string;
-  status: 'draft' | 'structured' | 'optimized';
+  status: 'draft' | 'structured_complete' | 'optimized' | 'unstructured';
   createdAt: string;
   updatedAt: string;
-  structured_coverLetter?: {
-    header: {
-      recipientName: string;
-      company: string;
-      address: string;
-      position: string;
-    };
-    introduction: {
-      motivation: string;
-    };
-    mainContent: {
-      experience: string;
-      qualification: string;
-    };
-    closing: {
-      closing: string;
-      signature: string;
-    };
-  };
-  optimized_coverLetter?: {
-    header: {
-      recipientName: string;
-      company: string;
-      address: string;
-      position: string;
-    };
-    introduction: {
-      motivation: string;
-    };
-    mainContent: {
-      experience: string;
-      qualification: string;
-    };
-    closing: {
-      closing: string;
-      signature: string;
-    };
-  };
+  structured_coverletter?: StructuredCoverLetter;
+  optimized_coverletter?: StructuredCoverLetter;
+}
+
+export interface UpdateCoverletterData {
+  title?: string;
+  rawText?: string;
+  language?: string;
+  status?: CoverLetter['status'];
+  structured_coverletter?: CoverLetter['structured_coverletter'];
+  optimized_coverletter?: CoverLetter['optimized_coverletter'];
+  optimized_status?: CoverLetter['optimized_status'];
+  user_id?: string;
 }
 
 export interface CoverLetterAnalysis {
@@ -125,7 +129,7 @@ export interface CoverLetterAnalysis {
 }
 
 // Job Description Types
-export interface JobDescription {
+export interface jobdescription {
   id: string;
   title: string;
   content: string;
@@ -152,8 +156,8 @@ export interface CreditHistory {
 // API Response Types
 export interface ApiResponse<T> {
   status: 'success' | 'error';
-  data?: T;
   message?: string;
+  data?: T;
 }
 
 // API Error Types
@@ -183,4 +187,21 @@ export type PatchOperation = {
 export interface ResumePatch {
   operations: PatchOperation[];
   user_id: string;
+}
+
+export interface CreateCoverLetterRequest {
+  title: string;
+  rawText: string;
+  language?: string;
+  userId: string;
+}
+
+export interface UpdateCoverLetterRequest {
+  title?: string;
+  rawText?: string;
+  language?: string;
+  status?: CoverLetter['status'];
+  structured_coverletter?: CoverLetter['structured_coverletter'];
+  optimized_coverletter?: CoverLetter['optimized_coverletter'];
+  optimized_status?: CoverLetter['optimized_status'];
 } 

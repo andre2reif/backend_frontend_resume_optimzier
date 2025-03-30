@@ -47,9 +47,9 @@ collection_resume = db_resume["resumes"]
 db_coverletter = client_db["coverletter_db"]
 collection_coverletter = db_coverletter["coverLetter"]
 
-# Collections für Jobdescription
-db_jobdesc = client_db["jobposting_db"]
-collection_jobdesc = db_jobdesc["jobPostings"]
+# Collections für jobdescription
+db_jobdesc = client_db["jobdescription_db"]
+collection_jobdesc = db_jobdesc["jobdescriptions"]
 
 # Collection für die Analyse
 db_analysis = client_db["analysis_db"]
@@ -101,10 +101,10 @@ async def count_coverletters():
     count = count_documents(collection_coverletter)
     return {"collection": "coverletters", "count": count}
 
-@app.get("/count/jobpostings")
-async def count_jobpostings():
+@app.get("/count/jobdescriptions")
+async def count_jobdescriptions():
     count = count_documents(collection_jobdesc)
-    return {"collection": "jobpostings", "count": count}
+    return {"collection": "jobdescriptions", "count": count}
 
 # #############################
 # ## Ansicht von Dokument_id ##
@@ -162,7 +162,7 @@ async def view_document(
         collection_name = "coverletters"
     elif jobdescription_id:
         doc = collection_jobdesc.find_one({"_id": ObjectId(jobdescription_id)})
-        collection_name = "jobpostings"
+        collection_name = "jobdescriptions"
     else:
         raise HTTPException(status_code=400, detail="Bitte mindestens einen Parameter (analysis_id, resume_id, coverLetter_id oder jobdescription_id) angeben.")
     
@@ -189,7 +189,7 @@ async def extract_structured_document(
     user_id: str = Query(..., description="User ID (als String) zur Zugriffsbeschränkung")
 ):
     """
-    Extrahiert den 'rawText' eines Dokuments (Resume, Coverletter oder Jobdescription),
+    Extrahiert den 'rawText' eines Dokuments (Resume, Coverletter oder jobdescription),
     strukturiert diesen mithilfe eines Prompt-Moduls und speichert das strukturierte Ergebnis
     in der jeweiligen Collection. Falls das Dokument bereits strukturiert und in der gewünschten Sprache
     vorliegt, wird das vorhandene Ergebnis zurückgegeben.
@@ -455,7 +455,7 @@ async def analysis_ats(
         result_doc = {
             "resumeId": resume_id,
             "coverLetterId": coverletter_id,
-            "jobDescriptionId": jobdescription_id,
+            "jobdescriptionId": jobdescription_id,
             "userId": user_id,
             "analysisResult": combined_analysis,
             "analysis_status": overall_status,
@@ -615,7 +615,7 @@ async def analysis_ats_optimized(
         result_doc = {
             "resumeId": resume_id,
             "coverLetterId": coverletter_id,
-            "jobDescriptionId": jobdescription_id,
+            "jobdescriptionId": jobdescription_id,
             "userId": user_id,
             "analysisResult": combined_analysis,
             "analysis_status": overall_status,
@@ -681,7 +681,7 @@ async def analysis_coverletter(
 
     result_doc = {
         "coverLetterId": coverletter_id,
-        "jobDescriptionId": jobdescription_id,
+        "jobdescriptionId": jobdescription_id,
         "analysisResult": {"cover_letter_analysis": coverletter_analysis_json},
         "status": analysis_status,
         "language": language,
@@ -866,9 +866,9 @@ async def optimize_coverletter_from_analysis(
         raise HTTPException(status_code=400, detail="Cover letter has not been structured yet. Use /extract-structured-document first.")
 
     # 5. Jobbeschreibung laden (zum Vergleich des Betreffs)
-    jobdesc_id = analysis_doc.get("jobDescriptionId")
+    jobdesc_id = analysis_doc.get("jobdescriptionId")
     if not jobdesc_id:
-        raise HTTPException(status_code=400, detail="No jobDescriptionId in analysis document.")
+        raise HTTPException(status_code=400, detail="No jobdescriptionId in analysis document.")
     jobdesc_doc = collection_jobdesc.find_one({"_id": ObjectId(jobdesc_id)})
     if not jobdesc_doc:
         raise HTTPException(status_code=404, detail="Job description not found in database.")
@@ -1019,7 +1019,7 @@ async def analysis_ats_optimized(
     result_doc = {
         "resumeId": resume_id,
         "coverLetterId": coverletter_id,
-        "jobDescriptionId": jobdescription_id,
+        "jobdescriptionId": jobdescription_id,
         "analysisResult": {
             "optimized": optimized_analysis_json,
             "optimized_status": analysis_status

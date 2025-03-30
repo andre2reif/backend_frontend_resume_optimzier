@@ -9,7 +9,7 @@ def get_prompt_messages(job_description: dict,
     Erzeugt eine Liste von Nachrichten (System + User), um einen
     ATS-/Recruiting-Check durchzuführen.
     
-    :param job_description:  Strukturiertes JSON der JobDescription
+    :param job_description:  Strukturiertes JSON der jobdescription
     :param cover_letter:     Strukturiertes JSON des Anschreibens
     :param resume:           Strukturiertes JSON des Lebenslaufs
     :param language:         'en' | 'de' | 'pl' (Standardsprache: en)
@@ -23,7 +23,7 @@ def get_prompt_messages(job_description: dict,
     structure = ANALYSIS_SCHEMA.strip()
 
     # -----------------------------------------------
-    # 2) JSON-Dumps für JobDescription / CoverLetter / Resume
+    # 2) JSON-Dumps für jobdescription / CoverLetter / Resume
     # -----------------------------------------------
     job_desc_str = json.dumps(job_description, ensure_ascii=False, indent=2)
     cover_letter_str = json.dumps(cover_letter, ensure_ascii=False, indent=2)
@@ -39,7 +39,7 @@ def get_prompt_messages(job_description: dict,
             in skill matching, keyword analysis and HR processes.
 
             I will give you the following:
-            1) A job description (JobDescription) as JSON
+            1) A job description (jobdescription) as JSON
             2) A cover letter (CoverLetter) as JSON
             3) A curriculum vitae (Resume) as JSON
 
@@ -58,7 +58,7 @@ def get_prompt_messages(job_description: dict,
             im Bereich Skill-Matching, Keyword-Analysen und HR-Prozesse.
 
             Ich werde dir Folgendes geben:
-            1) Eine Stellenbeschreibung (JobDescription) als JSON
+            1) Eine Stellenbeschreibung (jobdescription) als JSON
             2) Ein Anschreiben (CoverLetter) als JSON
             3) Einen Lebenslauf (Resume) als JSON
 
@@ -77,7 +77,7 @@ def get_prompt_messages(job_description: dict,
             w dopasowywaniu umiejętności, analizie słów kluczowych i procesach HR.
 
             Dostarczę Ci następujące elementy:
-            1) Opis stanowiska (JobDescription) jako JSON
+            1) Opis stanowiska (jobdescription) jako JSON
             2) List motywacyjny (CoverLetter) w formacie JSON
             3) Życiorys (Resume) jako JSON
 
@@ -117,7 +117,7 @@ Follow the instructions above and return only JSON in this structure:
         "de": f"""
 Untenstehend findest du die drei JSON-Daten:
 
-STELLENBESCHREIBUNG (JobDescription):
+STELLENBESCHREIBUNG (jobdescription):
 {job_desc_str}
 
 ANSCHREIBEN (CoverLetter):
@@ -135,7 +135,7 @@ Bitte befolge die obigen Anweisungen und liefere nur ein reines JSON-Objekt in d
         "pl": f"""
 Poniżej znajdują się trzy dane w formacie JSON:
 
-OPIS STANOWISKA (JobDescription):
+OPIS STANOWISKA (jobdescription):
 {job_desc_str}
 
 LIST MOTYWACYJNY (CoverLetter):

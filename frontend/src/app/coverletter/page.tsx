@@ -1,63 +1,113 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import LayoutMain from '@/components/layout/LayoutMain';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { API_BASE_URL } from '@/config/api';
-import FileUpload from '@/components/FileUpload';
+import { coverletterApi } from '@/lib/api/coverletter';
+import { CoverLetter, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
+import FileUpload from '@/components/FileUpload';
+import LayoutMain from '@/components/layout/LayoutMain';
+import { CreateCoverletterModal } from '@/components/coverletter/CreateCoverletterModal';
+import { structureMultipleDocuments } from '@/lib/services/structureService';
+import { ModalEditCoverletter } from '@/components/coverletter/ModalEditCoverletter';
+import { CardCoverLetter } from '@/components/coverletter/CardCoverletter';
 
-interface CoverLetter {
-  id: string;
-  title: string;
-  company: string;
-  createdAt: string;
-  status: 'draft' | 'optimized';
-  preview: string;
-}
-
-export default function CoverLetterPage() {
-  const { data: session } = useSession();
-  const [coverLetters, setCoverLetters] = useState<CoverLetter[]>([]);
+export default function CoverletterListPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [coverletters, setCoverletters] = useState<CoverLetter[]>([]);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isStructuring, setIsStructuring] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCoverletterId, setSelectedCoverletterId] = useState<string | null>(null);
+  const [processingCoverletters, setProcessingCoverletters] = useState<Set<string>>(new Set());
+  const [deletingCoverletters, setDeletingCoverletters] = useState<Set<string>>(new Set());
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchCoverLetters = useCallback(async () => {
-    if (!session?.user?.email) return;
-
+  const fetchCoverletters = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(
-        `${API_BASE_URL}/api/v1/coverletters/view?user_id=${encodeURIComponent(session.user.email)}`,
-        {
-          credentials: 'include',
+      const response: ApiResponse<CoverLetter[]> = await coverletterApi.getAll();
+      
+      if (response.status === 'success' && response.data) {
+        console.log('API Response:', response);
+        // Sortiere Coverletters nach Erstellungsdatum (neueste zuerst)
+        const sortedCoverletters = response.data.sort((a: CoverLetter, b: CoverLetter) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        console.log('Sorted Coverletters:', sortedCoverletters);
+        setCoverletters(sortedCoverletters);
+        
+        // Prüfe auf unstrukturierte Dokumente
+        const unstructuredDocs = sortedCoverletters.filter(doc => doc.status === 'unstructured');
+        console.log('Unstrukturierte Dokumente gefunden:', unstructuredDocs);
+        
+        if (unstructuredDocs.length > 0 && session?.user?.email) {
+          setIsStructuring(true);
+          console.log('Starte Strukturierung der Anschreiben:', unstructuredDocs);
+          
+          const documentsToStructure = unstructuredDocs.map(doc => {
+            console.log('Verarbeite Dokument:', doc);
+            console.log('Dokument ID:', doc.id);
+            return {
+              id: doc.id,
+              type: 'coverletter' as const,
+              status: doc.status
+            };
+          });
+          console.log('Dokumente für die Strukturierung:', documentsToStructure);
+          console.log('API-Aufruf an structureMultipleDocuments mit:', {
+            documents: documentsToStructure,
+            userId: session.user.email
+          });
+
+          structureMultipleDocuments(
+            documentsToStructure,
+            session.user.email
+          ).then(async () => {
+            console.log('Strukturierung erfolgreich abgeschlossen');
+            // Lade die Daten nach der Strukturierung neu
+            const updatedResponse = await coverletterApi.getAll();
+            if (updatedResponse.status === 'success' && updatedResponse.data) {
+              const updatedSortedCoverletters = updatedResponse.data.sort((a: CoverLetter, b: CoverLetter) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              setCoverletters(updatedSortedCoverletters);
+              console.log('Liste nach Strukturierung aktualisiert:', updatedSortedCoverletters);
+            }
+          }).catch(err => {
+            console.error('Fehler bei der Strukturierung:', err);
+            toast.error('Fehler bei der Strukturierung einiger Anschreiben');
+          }).finally(() => {
+            setIsStructuring(false);
+            console.log('Strukturierungsprozess beendet');
+          });
         }
-      );
-
-      if (!response.ok) {
-        throw new Error('Fehler beim Laden der Anschreiben');
-      }
-
-      const data = await response.json();
-      if (data.status === 'success') {
-        setCoverLetters(data.data);
       } else {
-        throw new Error(data.message || 'Fehler beim Laden der Anschreiben');
+        throw new Error('Keine Daten vom Server erhalten');
       }
-    } catch (error) {
-      console.error('Error fetching cover letters:', error);
-      setError('Fehler beim Laden der Anschreiben');
+    } catch (err) {
+      console.error('Fehler beim Laden:', err);
+      setError(err instanceof Error ? err.message : 'Ein Fehler ist aufgetreten');
+      toast.error('Fehler beim Laden der Lebensläufe');
+      setCoverletters([]);
     } finally {
       setIsLoading(false);
     }
   }, [session?.user?.email]);
 
   useEffect(() => {
-    fetchCoverLetters();
-  }, [fetchCoverLetters]);
+    if (status === 'authenticated' && session?.user?.email) {
+      fetchCoverletters();
+    } else if (status === 'unauthenticated') {
+      router.push('/signin');
+    }
+  }, [status, session, router, fetchCoverletters]);
 
   const handleFileUpload = async (content: string, filename: string) => {
     if (!session?.user?.email) {
@@ -68,50 +118,169 @@ export default function CoverLetterPage() {
     try {
       setIsUploading(true);
       const title = filename.replace(/\.[^/.]+$/, '');
-      
-      const formData = new FormData();
-      formData.append('title', title);
-      formData.append('content', content);
-      formData.append('user_id', session.user.email);
 
-      const response = await fetch(`${API_BASE_URL}/api/v1/coverletters/create`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
+      // Erstelle das Anschreiben
+      console.log('Sende Anfrage zum Erstellen des Anschreibens:', {
+        title,
+        contentLength: content.length,
+        language: 'de',
+        userId: session.user.email
       });
 
-      if (!response.ok) {
-        throw new Error('Fehler beim Erstellen des Anschreibens');
+      const response = await coverletterApi.create({
+        title,
+        rawText: content,
+        language: 'de',
+        userId: session.user.email
+      });
+
+      console.log('Server-Antwort:', response);
+
+      if (!response || !response.data) {
+        throw new Error('Keine gültige Antwort vom Server erhalten');
       }
 
-      const data = await response.json();
-      if (data.status === 'success') {
-        toast.success('Anschreiben erfolgreich erstellt');
-        await fetchCoverLetters();
-      } else {
-        throw new Error(data.message || 'Fehler beim Erstellen des Anschreibens');
+      if (!response.data._id) {
+        console.error('Antwort ohne ID:', response);
+        throw new Error('Keine ID vom Server erhalten');
+      }
+
+      // Warte kurz, bis die Daten in der Datenbank verfügbar sind
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Strukturiere das Anschreiben
+      try {
+        console.log('Starte Strukturierung für Anschreiben:', response.data._id);
+        const structureResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/extract-structured-document?document_id=${response.data._id}&document_type=coverletter&language=de&user_id=${session.user.email}`
+        );
+
+        if (!structureResponse.ok) {
+          const errorText = await structureResponse.text();
+          console.error('Strukturierungsfehler:', errorText);
+          throw new Error(`Fehler bei der Strukturierung: ${errorText}`);
+        }
+
+        const structureResult = await structureResponse.json();
+        console.log('Strukturierung erfolgreich:', structureResult);
+
+        // Aktualisiere die Liste der Anschreiben
+        const updatedResponse = await coverletterApi.getAll();
+        if (updatedResponse.data) {
+          setCoverletters(updatedResponse.data);
+        }
+
+        toast.success('Anschreiben erfolgreich erstellt und strukturiert');
+      } catch (error) {
+        console.error('Fehler bei der Strukturierung:', error);
+        toast.error('Fehler bei der Strukturierung des Anschreibens');
+        // Lade die Liste trotzdem neu, um den aktuellen Status zu sehen
+        const updatedResponse = await coverletterApi.getAll();
+        if (updatedResponse.data) {
+          setCoverletters(updatedResponse.data);
+        }
       }
     } catch (error) {
-      console.error('Error creating cover letter:', error);
+      console.error('Fehler beim Erstellen:', error);
       toast.error('Fehler beim Erstellen des Anschreibens');
     } finally {
       setIsUploading(false);
     }
   };
 
-  if (!session) {
+  const handleDelete = async (id: string) => {
+    if (!session?.user?.email) {
+      toast.error('Bitte melden Sie sich an');
+      return;
+    }
+
+    try {
+      // Prüfe, ob der Lebenslauf noch in der Liste existiert
+      const coverletterExists = coverletters.some(coverletter => coverletter.id === id);
+      if (!coverletterExists) {
+        console.log('Lebenslauf wurde bereits gelöscht');
+        return;
+      }
+
+      await coverletterApi.delete(id, session.user.email);
+      
+      // Aktualisiere die Liste und das deletingCoverletters Set
+      setCoverletters(prevCoverletters => {
+        const newCoverletters = prevCoverletters.filter(coverletter => coverletter.id !== id);
+        // Wenn die Liste leer ist, leere auch das deletingCoverletters Set
+        if (newCoverletters.length === 0) {
+          setDeletingCoverletters(new Set());
+        }
+        return newCoverletters;
+      });
+    } catch (error: any) {
+      // Wenn der Fehler ein 404 ist, ignorieren wir ihn, da der Lebenslauf bereits gelöscht wurde
+      if (error.message?.includes('404') || error.message?.includes('not found')) {
+        console.log('Lebenslauf wurde bereits gelöscht');
+        setCoverletters(prevCoverletters => {
+          const newCoverletters = prevCoverletters.filter(coverletter => coverletter.id !== id);
+          // Wenn die Liste leer ist, leere auch das deletingCoverletters Set
+          if (newCoverletters.length === 0) {
+            setDeletingCoverletters(new Set());
+          }
+          return newCoverletters;
+        });
+        return;
+      }
+      
+      console.error('Fehler beim Löschen des Lebenslaufs:', error);
+      toast.error('Fehler beim Löschen des Lebenslaufs');
+    }
+  };
+
+  const handleStartDelete = (id: string) => {
+    setDeletingCoverletters(prev => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
+  };
+
+  const handleCancelDelete = (id: string) => {
+    setDeletingCoverletters(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+  };
+
+  const handleEdit = (id: string) => {
+    setSelectedCoverletterId(id);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedCoverletterId(null);
+  };
+
+  const handleCoverletterUpdate = (updatedCoverletter: CoverLetter) => {
+    setCoverletters(coverletters.map(coverletter => 
+      coverletter.id === updatedCoverletter.id ? updatedCoverletter : coverletter
+    ));
+    handleModalClose();
+  };
+
+  if (status === 'loading' || isLoading) {
     return (
       <LayoutMain>
         <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Bitte melden Sie sich an</h1>
-            <Link
-              href="/auth/signin"
-              className="mt-4 inline-block rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
-            >
-              Anmelden
-            </Link>
-          </div>
+          <div className="loading loading-spinner loading-lg"></div>
+        </div>
+      </LayoutMain>
+    );
+  }
+
+  if (error) {
+    return (
+      <LayoutMain>
+        <div className="alert alert-error m-4">
+          <span>{error}</span>
         </div>
       </LayoutMain>
     );
@@ -119,101 +288,82 @@ export default function CoverLetterPage() {
 
   return (
     <LayoutMain>
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Anschreiben</h1>
-        </div>
-
-        <div className="bg-gray-100 rounded-lg p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Neues Anschreiben hochladen</h2>
-          <p className="text-gray-600 mb-4">
-            Laden Sie ein bestehendes Anschreiben hoch oder erstellen Sie ein neues.
-          </p>
-          <FileUpload 
-            onUpload={handleFileUpload} 
-            isUploading={isUploading}
-            acceptedFileTypes="PDF, DOC oder DOCX bis zu 5MB"
-          />
-        </div>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
-
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            {isLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <span className="loading loading-spinner loading-lg"></span>
-              </div>
-            ) : coverLetters.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                Keine Anschreiben vorhanden. Laden Sie ein neues Anschreiben hoch.
-              </div>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Titel
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Unternehmen
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Erstellt am
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Aktionen
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {coverLetters.map((letter) => (
-                    <tr key={letter.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{letter.title}</div>
-                        <div className="text-sm text-gray-500">{letter.preview}...</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{letter.company}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          letter.status === 'optimized' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {letter.status === 'optimized' ? 'Optimiert' : 'Entwurf'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{new Date(letter.createdAt).toLocaleDateString('de-DE')}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button className="text-blue-600 hover:text-blue-900 mr-4">
-                          Bearbeiten
-                        </button>
-                        <button className="text-purple-600 hover:text-purple-900 mr-4">
-                          Optimieren
-                        </button>
-                        <button className="text-red-600 hover:text-red-900">
-                          Löschen
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="space-y-6">
+        <div className="sm:flex sm:items-center">
+          <div className="sm:flex-auto">
+            <h1 className="text-2xl font-semibold text-base-content">Meine Lebensläufe</h1>
+            <p className="mt-2 text-sm text-base-content/80">
+              Verwalten Sie Ihre Lebensläufe und optimieren Sie sie für Ihre Bewerbungen.
+            </p>
+            {isStructuring && (
+              <p className="mt-2 text-sm text-warning">
+                Lebensläufe werden strukturiert... Dies kann einige Minuten dauern.
+              </p>
             )}
           </div>
+          <div className="mt-4 sm:ml-16 sm:mt-0">
+            <button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="btn btn-primary"
+            >
+              Anschreiben erstellen
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-hidden bg-base-200 shadow sm:rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg font-medium leading-6 text-base-content">
+              Neues Anschreiben erstellen
+            </h3>
+            <div className="mt-2 max-w-xl text-sm text-base-content/80">
+              <p>Erstellen Sie ein neues Anschreiben oder laden Sie einen bestehenden Lebenslauf hoch.</p>
+            </div>
+            <div className="mt-5">
+              <FileUpload onUpload={handleFileUpload} disabled={isUploading} />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {coverletters.length > 0 ? (
+            coverletters
+              .filter(coverletter => coverletter.id)
+              .map((coverletter) => (
+                <div key={`coverletter-${coverletter.id}`}>
+                  <CardCoverLetter
+                    coverLetter={coverletter}
+                    processingCoverletters={processingCoverletters}
+                    deletingCoverletters={deletingCoverletters}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onStartDelete={handleStartDelete}
+                    onCancelDelete={handleCancelDelete}
+                  />
+                </div>
+              ))
+          ) : (
+            <div className="col-span-full text-center">
+              <p>Keine Lebensläufe vorhanden</p>
+            </div>
+          )}
         </div>
       </div>
+
+      <CreateCoverletterModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={fetchCoverletters}
+      />
+
+      {isModalOpen && selectedCoverletterId && (
+        <ModalEditCoverletter
+          isOpen={isModalOpen}
+          onClose={handleModalClose}
+          coverletterId={selectedCoverletterId}
+          onSave={handleCoverletterUpdate}
+        />
+      )}
     </LayoutMain>
   );
 } 

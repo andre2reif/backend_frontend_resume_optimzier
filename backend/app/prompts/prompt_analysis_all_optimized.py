@@ -12,7 +12,7 @@ def get_prompt_messages_optimized_resume(job_description: dict,
     Erzeugt eine Liste von Nachrichten (System + User), um einen
     ATS-/Recruiting-Check durchzuführen.
     
-    :param job_description:  Strukturiertes JSON der JobDescription
+    :param job_description:  Strukturiertes JSON der jobdescription
     :param cover_letter:     Strukturiertes JSON des Anschreibens
     :param resume:           Strukturiertes JSON des Lebenslaufs
     :param language:         'en' | 'de' | 'pl' (Standardsprache: en)
@@ -26,7 +26,7 @@ def get_prompt_messages_optimized_resume(job_description: dict,
     structure = RESUME_SCHEMA.strip()
 
     # -----------------------------------------------
-    # 2) JSON-Dumps für JobDescription / CoverLetter / Resume
+    # 2) JSON-Dumps für jobdescription / CoverLetter / Resume
     # -----------------------------------------------
     job_desc_str = json.dumps(job_description, ensure_ascii=False, indent=2)
     cover_letter_str = simplify_optimized_resume(cover_letter)
@@ -71,7 +71,7 @@ Follow the instructions above and return only JSON in this structure:
         "de": f"""
 Untenstehend findest du die drei JSON-Daten:
 
-STELLENBESCHREIBUNG (JobDescription):
+STELLENBESCHREIBUNG (jobdescription):
 {job_desc_str}
 
 ANSCHREIBEN (CoverLetter, (enthält *SUGGESTION*-Markierungen):
@@ -89,7 +89,7 @@ Bitte befolge die obigen Anweisungen und liefere nur ein reines JSON-Objekt in d
         "pl": f"""
 Poniżej znajdują się trzy dane w formacie JSON:
 
-OPIS STANOWISKA (JobDescription):
+OPIS STANOWISKA (jobdescription):
 {job_desc_str}
 
 LIST MOTYWACYJNY (CoverLetter, zawiera oznaczenia *SUGGESTION*):
@@ -121,7 +121,7 @@ def get_prompt_messages_optimized_coverletter(job_description: dict,
     Erzeugt eine Liste von Nachrichten (System + User), um einen
     ATS-/Recruiting-Check durchzuführen.
     
-    :param job_description:  Strukturiertes JSON der JobDescription
+    :param job_description:  Strukturiertes JSON der jobdescription
     :param cover_letter:     Strukturiertes JSON des Anschreibens
     :param resume:           Strukturiertes JSON des Lebenslaufs
     :param language:         'en' | 'de' | 'pl' (Standardsprache: en)
@@ -135,7 +135,7 @@ def get_prompt_messages_optimized_coverletter(job_description: dict,
     structure = COVERLETTER_SCHEMA.strip()
 
     # -----------------------------------------------
-    # 2) JSON-Dumps für JobDescription / CoverLetter / Resume
+    # 2) JSON-Dumps für jobdescription / CoverLetter / Resume
     # -----------------------------------------------
     job_desc_str = json.dumps(job_description, ensure_ascii=False, indent=2)
     cover_letter_str = simplify_optimized_resume(cover_letter)
@@ -176,7 +176,7 @@ Follow the instructions above and return only JSON in this structure:
         "de": f"""
 Untenstehend findest du die drei JSON-Daten:
 
-STELLENBESCHREIBUNG (JobDescription):
+STELLENBESCHREIBUNG (jobdescription):
 {job_desc_str}
 
 ANSCHREIBEN (CoverLetter, (enthält *SUGGESTION*-Markierungen):
@@ -191,7 +191,7 @@ Bitte befolge die obigen Anweisungen und liefere nur ein reines JSON-Objekt in d
         "pl": f"""
 Poniżej znajdują się trzy dane w formacie JSON:
 
-OPIS STANOWISKA (JobDescription):
+OPIS STANOWISKA (jobdescription):
 {job_desc_str}
 
 LIST MOTYWACYJNY (CoverLetter, zawiera oznaczenia *SUGGESTION*):

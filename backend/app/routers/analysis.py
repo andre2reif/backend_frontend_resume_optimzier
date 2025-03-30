@@ -32,8 +32,8 @@ async def view_analysis(analysis_id: str, user_id: str):
         doc["resumeId"] = str(doc["resumeId"])
     if "coverLetterId" in doc:
         doc["coverLetterId"] = str(doc["coverLetterId"])
-    if "jobDescriptionId" in doc:
-        doc["jobDescriptionId"] = str(doc["jobDescriptionId"])
+    if "jobdescriptionId" in doc:
+        doc["jobdescriptionId"] = str(doc["jobdescriptionId"])
     
     return doc
 
@@ -94,7 +94,7 @@ async def analysis_ats(
         "userId": user_id,
         "resumeId": ObjectId(resume_id),
         "coverLetterId": ObjectId(coverletter_id),
-        "jobDescriptionId": ObjectId(jobdescription_id),
+        "jobdescriptionId": ObjectId(jobdescription_id),
         "analysis": analysis_dict,  # Speichere als strukturiertes Objekt
         "language": language,
         "useOptimizedResume": use_optimized_resume,
@@ -121,7 +121,7 @@ async def analysis_ats(
     analysis_doc["_id"] = analysis_id
     analysis_doc["resumeId"] = str(analysis_doc["resumeId"])
     analysis_doc["coverLetterId"] = str(analysis_doc["coverLetterId"])
-    analysis_doc["jobDescriptionId"] = str(analysis_doc["jobDescriptionId"])
+    analysis_doc["jobdescriptionId"] = str(analysis_doc["jobdescriptionId"])
     
     return analysis_doc
 

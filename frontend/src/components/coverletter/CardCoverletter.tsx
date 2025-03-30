@@ -1,18 +1,29 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { CoverLetter } from '@/types/api'
-import { formatDate } from '@/lib/utils/date'
-import { showErrorToast } from '@/lib/toast/utils'
+import { useState } from 'react';
+import { CoverLetter } from '@/types/api';
+
+import { showErrorToast } from '@/lib/toast/utils';
 
 interface CardCoverLetterProps {
-  coverLetter: CoverLetter
-  onEdit: (id: string) => void
-  onDelete: (id: string) => void
-  onStartDelete: (id: string) => void
-  onCancelDelete: (id: string) => void
-  processingCoverletters: Set<string>
-  deletingCoverletters: Set<string>
+  coverLetter: CoverLetter;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+  onStartDelete: (id: string) => void;
+  onCancelDelete: (id: string) => void;
+  processingCoverletters: Set<string>;
+  deletingCoverletters: Set<string>;
+}
+
+function formatDate(dateString: string | Date): string {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Ungültiges Datum';
+    return format(date, 'dd.MM.yyyy HH:mm', { locale: de });
+  } catch (error) {
+    console.error('Fehler bei der Datumsformatierung:', error);
+    return 'Ungültiges Datum';
+  }
 }
 
 export function CardCoverLetter({
@@ -24,30 +35,30 @@ export function CardCoverLetter({
   processingCoverletters,
   deletingCoverletters
 }: CardCoverLetterProps) {
-  const isProcessing = processingCoverletters.has(coverLetter._id)
-  const isDeleting = deletingCoverletters.has(coverLetter._id)
+  const isProcessing = processingCoverletters.has(coverLetter.id);
+  const isDeleting = deletingCoverletters.has(coverLetter.id);
 
   const getStatusBadgeClass = (status: CoverLetter['status']) => {
     switch (status) {
       case 'structured_complete':
-        return 'badge-success'
+        return 'badge-success';
       case 'optimized':
-        return 'badge-primary'
+        return 'badge-primary';
       default:
-        return 'badge-warning'
+        return 'badge-warning';
     }
-  }
+  };
 
   const getStatusText = (status: CoverLetter['status']) => {
     switch (status) {
       case 'structured_complete':
-        return 'Strukturiert'
+        return 'Strukturiert';
       case 'optimized':
-        return 'Optimiert'
+        return 'Optimiert';
       default:
-        return 'Entwurf'
+        return 'Entwurf';
     }
-  }
+  };
 
   return (
     <div className={`card bg-base-100 shadow-xl transition-opacity duration-200 ${isProcessing ? 'opacity-50' : 'opacity-100'}`}>
@@ -60,7 +71,7 @@ export function CardCoverLetter({
         </div>
 
         <p className="mt-2 text-sm text-gray-600">
-          {coverLetter.rawText.substring(0, 150)}...
+          {coverLetter.rawText ? coverLetter.rawText.substring(0, 150) + '...' : 'Kein Inhalt verfügbar'}
         </p>
 
         <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
@@ -71,7 +82,7 @@ export function CardCoverLetter({
         <div className="card-actions mt-4 justify-end">
           <button
             className="btn btn-ghost btn-sm"
-            onClick={() => onEdit(coverLetter._id)}
+            onClick={() => onEdit(coverLetter.id)}
             disabled={isProcessing || isDeleting}
           >
             Bearbeiten
@@ -80,13 +91,13 @@ export function CardCoverLetter({
             <div className="space-x-2">
               <button
                 className="btn btn-error btn-sm"
-                onClick={() => onDelete(coverLetter._id)}
+                onClick={() => onDelete(coverLetter.id)}
               >
                 Wirklich löschen?
               </button>
               <button
                 className="btn btn-ghost btn-sm"
-                onClick={() => onCancelDelete(coverLetter._id)}
+                onClick={() => onCancelDelete(coverLetter.id)}
               >
                 Abbrechen
               </button>
@@ -94,7 +105,7 @@ export function CardCoverLetter({
           ) : (
             <button
               className="btn btn-error btn-sm"
-              onClick={() => onStartDelete(coverLetter._id)}
+              onClick={() => onStartDelete(coverLetter.id)}
               disabled={isProcessing}
             >
               Löschen
@@ -103,5 +114,5 @@ export function CardCoverLetter({
         </div>
       </div>
     </div>
-  )
+  );
 } 

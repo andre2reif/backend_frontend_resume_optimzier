@@ -2,20 +2,20 @@
 
 import { useState } from 'react';
 import ModalLayout from '../layout/ModalLayout';
-import { jobDescriptionApi } from '@/lib/api';
+import { jobdescriptionApi } from '@/lib/api';
 import toast from 'react-hot-toast';
 
-interface CreateJobDescriptionModalProps {
+interface CreatejobdescriptionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export default function CreateJobDescriptionModal({
+export default function CreatejobdescriptionModal({
   isOpen,
   onClose,
   onSuccess,
-}: CreateJobDescriptionModalProps) {
+}: CreatejobdescriptionModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -33,7 +33,7 @@ export default function CreateJobDescriptionModal({
     setIsLoading(true);
 
     try {
-      const response = await jobDescriptionApi.create(formData);
+      const response = await jobdescriptionApi.create(formData);
       if (response.status === "success") {
         toast.success('Stellenausschreibung erfolgreich erstellt');
         onSuccess();

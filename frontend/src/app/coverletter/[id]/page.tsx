@@ -3,17 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { jobdescriptionApi } from '@/lib/api';
-import { jobdescription } from '@/types/api';
+import { coverletterApi } from '@/lib/api/coverletter';
+import { Coverletter, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
+import PDFDownloadButton from '@/components/PDFDownloadButton';
 import LayoutMain from '@/components/layout/LayoutMain';
 
-export default function jobdescriptionEditPage({ params }: { params: { id: string } }) {
+export default function CoverletterEditPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [jobdescription, setjobdescription] = useState<jobdescription | null>(null);
+  const [coverletter, setCoverletter] = useState<Coverletter | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -25,24 +26,25 @@ export default function jobdescriptionEditPage({ params }: { params: { id: strin
       return;
     }
 
-    fetchjobdescription();
+    fetchCoverletter();
   }, [session, router, params.id]);
 
-  const fetchjobdescription = async () => {
+  const fetchCoverletter = async () => {
     try {
-      const response = await jobdescriptionApi.getById(params.id);
-      if (response.data.data) {
-        setjobdescription(response.data.data);
+      const response: ApiResponse<Coverletter> = await coverletterApi.getById(params.id);
+      if (response.status === 'success' && response.data) {
+        setCoverletter(response.data);
         setFormData({
-          title: response.data.data.title,
-          content: response.data.data.content,
+          title: response.data.title,
+          content: response.data.content || '',
         });
       } else {
         throw new Error('Keine Daten vom Server erhalten');
       }
     } catch (error) {
-      toast.error('Fehler beim Laden der Stellenausschreibung');
-      router.push('/jobdescription');
+      console.error('Fehler beim Laden des Lebenslaufs:', error);
+      toast.error('Fehler beim Laden des Lebenslaufs');
+      router.push('/coverletter');
     } finally {
       setIsLoading(false);
     }
@@ -53,31 +55,44 @@ export default function jobdescriptionEditPage({ params }: { params: { id: strin
     setIsSaving(true);
 
     try {
-      const response = await jobdescriptionApi.update(params.id, formData);
-      if (response.data.data) {
-        setjobdescription(response.data.data);
-        toast.success('Stellenausschreibung erfolgreich gespeichert');
+      if (!coverletter) {
+        throw new Error('Kein Lebenslauf geladen');
+      }
+
+      // Erstelle ein aktualisiertes Coverletter-Objekt
+      const updatedCoverletter = {
+        ...coverletter,
+        title: formData.title,
+        content: formData.content
+      };
+
+      const response: ApiResponse<Coverletter> = await coverletterApi.patch(params.id, coverletter, updatedCoverletter);
+      if (response.status === 'success' && response.data) {
+        setCoverletter(response.data);
+        toast.success('Lebenslauf erfolgreich gespeichert');
       } else {
-        throw new Error('Keine Daten vom Server erhalten');
+        throw new Error(response.message || 'Keine Daten vom Server erhalten');
       }
     } catch (error) {
-      toast.error('Fehler beim Speichern der Stellenausschreibung');
+      console.error('Fehler beim Speichern des Lebenslaufs:', error);
+      toast.error('Fehler beim Speichern des Lebenslaufs');
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Möchten Sie diese Stellenausschreibung wirklich löschen?')) {
+    if (!confirm('Möchten Sie diesen Lebenslauf wirklich löschen?')) {
       return;
     }
 
     try {
-      await jobdescriptionApi.delete(params.id);
-      toast.success('Stellenausschreibung erfolgreich gelöscht');
-      router.push('/jobdescription');
+      await coverletterApi.delete(params.id);
+      toast.success('Lebenslauf erfolgreich gelöscht');
+      router.push('/coverletter');
     } catch (error) {
-      toast.error('Fehler beim Löschen der Stellenausschreibung');
+      console.error('Fehler beim Löschen des Lebenslaufs:', error);
+      toast.error('Fehler beim Löschen des Lebenslaufs');
     }
   };
 
@@ -95,7 +110,7 @@ export default function jobdescriptionEditPage({ params }: { params: { id: strin
     );
   }
 
-  if (!jobdescription) {
+  if (!coverletter) {
     return null;
   }
 
@@ -104,10 +119,16 @@ export default function jobdescriptionEditPage({ params }: { params: { id: strin
       <div className="space-y-6">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-base-content">Stellenausschreibung bearbeiten</h1>
+            <h1 className="text-2xl font-semibold text-base-content">Lebenslauf bearbeiten</h1>
             <p className="mt-2 text-sm text-base-content/80">
-              Bearbeiten Sie Ihre Stellenausschreibung und analysieren Sie sie für optimale Bewerbungen.
+              Bearbeiten Sie Ihren Lebenslauf und optimieren Sie ihn für ATS-Systeme.
             </p>
+          </div>
+          <div className="mt-4 sm:ml-16 sm:mt-0">
+            <PDFDownloadButton
+              coverletter={coverletter}
+              className="btn btn-primary"
+            />
           </div>
         </div>
 

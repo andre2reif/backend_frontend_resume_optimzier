@@ -85,7 +85,7 @@ async def create_jobdescription(
             "title": title,
             "content": content,
             "userId": user_id,
-            "status": "draft",
+            "status": "unstructured",
             "createdAt": datetime.utcnow(),
             "updatedAt": datetime.utcnow()
         }
@@ -100,7 +100,7 @@ async def create_jobdescription(
                     "id": str(result.inserted_id),
                     "title": title,
                     "content": content,
-                    "status": "draft",
+                    "status": "unstructured",
                     "createdAt": jobdesc_doc["createdAt"].isoformat(),
                     "updatedAt": jobdesc_doc["updatedAt"].isoformat()
                 }
@@ -202,6 +202,6 @@ async def delete_jobdescription(jobdescription_id: str, user_id: str = Query(...
         )
 
 @router.get("/count")
-async def count_jobpostings(user_id: str = Query(..., description="User ID to count job descriptions for")):
+async def count_jobdescriptions(user_id: str = Query(..., description="User ID to count job descriptions for")):
     count = collection_jobdesc.count_documents({"userId": user_id})
-    return {"collection": "jobpostings", "count": count}
+    return {"collection": "jobdescriptions", "count": count}

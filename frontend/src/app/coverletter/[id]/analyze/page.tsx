@@ -3,36 +3,36 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { resumeApi } from '@/lib/api';
-import { Resume, ResumeAnalysis } from '@/types/api';
+import { coverletterApi } from '@/lib/api';
+import { Coverletter, CoverletterAnalysis } from '@/types/api';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { ResumeAnalysisResults } from '@/components/ResumeAnalysisResults';
+import { CoverletterAnalysisResults } from '@/components/CoverletterAnalysisResults';
 
-export default function AnalyzeResumePage({ params }: { params: { id: string } }) {
+export default function AnalyzeCoverletterPage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [resume, setResume] = useState<Resume | null>(null);
-  const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
+  const [coverletter, setCoverletter] = useState<Coverletter | null>(null);
+  const [analysis, setAnalysis] = useState<CoverletterAnalysis | null>(null);
   const [jobdescription, setjobdescription] = useState('');
 
   useEffect(() => {
-    const fetchResume = async () => {
+    const fetchCoverletter = async () => {
       try {
-        const response = await resumeApi.getById(params.id);
-        setResume(response.data.data);
+        const response = await coverletterApi.getById(params.id);
+        setCoverletter(response.data.data);
       } catch (error) {
         toast.error('Fehler beim Laden des Lebenslaufs');
-        router.push('/resume');
+        router.push('/coverletter');
       } finally {
         setIsLoading(false);
       }
     };
 
     if (session) {
-      fetchResume();
+      fetchCoverletter();
     }
   }, [session, params.id, router]);
 
@@ -60,7 +60,7 @@ export default function AnalyzeResumePage({ params }: { params: { id: string } }
     );
   }
 
-  if (!resume) {
+  if (!coverletter) {
     return null;
   }
 
@@ -69,7 +69,7 @@ export default function AnalyzeResumePage({ params }: { params: { id: string } }
     setIsAnalyzing(true);
 
     try {
-      const response = await resumeApi.analyze(params.id, jobdescription);
+      const response = await coverletterApi.analyze(params.id, jobdescription);
       setAnalysis(response.data.data);
       toast.success('Analyse erfolgreich abgeschlossen');
     } catch (error) {
@@ -134,7 +134,7 @@ export default function AnalyzeResumePage({ params }: { params: { id: string } }
         </div>
       </form>
 
-      {analysis && <ResumeAnalysisResults analysis={analysis} />}
+      {analysis && <CoverletterAnalysisResults analysis={analysis} />}
     </div>
   );
 } 

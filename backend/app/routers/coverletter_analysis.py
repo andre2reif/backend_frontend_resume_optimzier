@@ -111,7 +111,7 @@ async def analysis_ats(
     analysis_doc = {
         "userId": user_id,
         "coverLetterId": ObjectId(coverletter_id),
-        "jobDescriptionId": ObjectId(jobdescription_id),
+        "jobdescriptionId": ObjectId(jobdescription_id),
         "analysis": analysis_dict,
         "language": language,
         "createdAt": datetime.utcnow(),
@@ -135,6 +135,6 @@ async def analysis_ats(
     # Konvertiere ObjectId in String für die Antwort
     analysis_doc["_id"] = analysis_id
     analysis_doc["coverLetterId"] = str(analysis_doc["coverLetterId"])
-    analysis_doc["jobDescriptionId"] = str(analysis_doc["jobDescriptionId"])
+    analysis_doc["jobdescriptionId"] = str(analysis_doc["jobdescriptionId"])
     
     return analysis_doc 

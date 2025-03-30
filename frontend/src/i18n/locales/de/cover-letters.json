@@ -20,7 +20,7 @@
     "deleting": "Wird gelöscht...",
     "confirmDelete": "Möchten Sie dieses Anschreiben wirklich löschen?",
     "status": {
-      "draft": "Entwurf",
+      "unstructured": "Entwurf",
       "structured": "Strukturiert",
       "optimized": "Optimiert"
     }

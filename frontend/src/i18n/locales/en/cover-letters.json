@@ -20,7 +20,7 @@
     "deleting": "Deleting...",
     "confirmDelete": "Are you sure you want to delete this cover letter?",
     "status": {
-      "draft": "Draft",
+      "unstructured": "unstructured",
       "structured": "Structured",
       "optimized": "Optimized"
     }

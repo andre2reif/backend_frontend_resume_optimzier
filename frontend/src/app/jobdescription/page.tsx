@@ -4,34 +4,34 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { jobDescriptionApi } from '@/lib/api';
-import { JobDescription, ApiResponse } from '@/types/api';
+import { jobdescriptionApi } from '@/lib/api';
+import { jobdescription, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
 import FileUpload from '@/components/FileUpload';
 import LayoutMain from '@/components/layout/LayoutMain';
-import CreateJobDescriptionModal from '@/components/jobdescription/CreateJobDescriptionModal';
+import CreatejobdescriptionModal from '@/components/jobdescription/CreatejobdescriptionModal';
 
-export default function JobDescriptionListPage() {
+export default function jobdescriptionListPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [jobDescriptions, setJobDescriptions] = useState<JobDescription[]>([]);
+  const [jobdescriptions, setjobdescriptions] = useState<jobdescription[]>([]);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const fetchJobDescriptions = useCallback(async () => {
+  const fetchjobdescriptions = useCallback(async () => {
     try {
-      const response: ApiResponse<JobDescription[]> = await jobDescriptionApi.getAll();
+      const response: ApiResponse<jobdescription[]> = await jobdescriptionApi.getAll();
       if (response.status === 'success') {
-        setJobDescriptions(response.data);
+        setjobdescriptions(response.data);
       } else {
         console.error('Unerwartetes Datenformat:', response);
-        setJobDescriptions([]);
+        setjobdescriptions([]);
       }
     } catch (error: any) {
       console.error('Fehler beim Laden der Stellenausschreibungen:', error);
       toast.error('Fehler beim Laden der Stellenausschreibungen');
-      setJobDescriptions([]);
+      setjobdescriptions([]);
     }
   }, []);
 
@@ -43,15 +43,15 @@ export default function JobDescriptionListPage() {
 
     const loadInitialData = async () => {
       setIsLoading(true);
-      await fetchJobDescriptions();
+      await fetchjobdescriptions();
       setIsLoading(false);
     };
 
     loadInitialData();
-  }, [session?.user?.email, router, fetchJobDescriptions]);
+  }, [session?.user?.email, router, fetchjobdescriptions]);
 
   const checkForDuplicates = (content: string): boolean => {
-    return jobDescriptions.some(job => {
+    return jobdescriptions.some(job => {
       // Normalisiere die Texte für den Vergleich
       const normalizedContent = content.toLowerCase().replace(/\s+/g, ' ').trim();
       const normalizedJobContent = job.content.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -77,13 +77,13 @@ export default function JobDescriptionListPage() {
     try {
       setIsUploading(true);
       const title = filename.replace(/\.[^/.]+$/, '');
-      const response: ApiResponse<JobDescription> = await jobDescriptionApi.create({
+      const response: ApiResponse<jobdescription> = await jobdescriptionApi.create({
         title,
         content,
       });
       
       if (response.status === 'success') {
-        await fetchJobDescriptions();
+        await fetchjobdescriptions();
         toast.success('Stellenausschreibung erfolgreich erstellt');
       } else {
         throw new Error('Keine Daten vom Server erhalten');
@@ -102,8 +102,8 @@ export default function JobDescriptionListPage() {
     }
 
     try {
-      await jobDescriptionApi.delete(id);
-      await fetchJobDescriptions();
+      await jobdescriptionApi.delete(id);
+      await fetchjobdescriptions();
       toast.success('Stellenausschreibung erfolgreich gelöscht');
     } catch (error) {
       toast.error('Fehler beim Löschen der Stellenausschreibung');
@@ -160,38 +160,38 @@ export default function JobDescriptionListPage() {
 
         <div className="overflow-hidden bg-base-200 shadow sm:rounded-lg">
           <ul className="divide-y divide-base-content/10">
-            {jobDescriptions.map((jobDescription) => (
-              <li key={jobDescription.id} className="px-4 py-4 sm:px-6">
+            {jobdescriptions.map((jobdescription) => (
+              <li key={jobdescription.id} className="px-4 py-4 sm:px-6">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <h3 className="text-sm font-medium text-base-content">{jobDescription.title}</h3>
+                    <h3 className="text-sm font-medium text-base-content">{jobdescription.title}</h3>
                     <p className="mt-1 text-sm text-base-content/80">
-                      Erstellt am {new Date(jobDescription.createdAt).toLocaleDateString('de-DE')}
+                      Erstellt am {new Date(jobdescription.createdAt).toLocaleDateString('de-DE')}
                     </p>
-                    {jobDescription.preview && (
+                    {jobdescription.preview && (
                       <p className="mt-1 text-sm text-base-content/60 line-clamp-2">
-                        {jobDescription.preview}
+                        {jobdescription.preview}
                       </p>
                     )}
                     <p className="mt-1 text-xs text-base-content/40">
-                      Status: {jobDescription.status}
+                      Status: {jobdescription.status}
                     </p>
                   </div>
                   <div className="ml-4 flex flex-shrink-0 space-x-2">
                     <Link
-                      href={`/jobdescription/${jobDescription.id}`}
+                      href={`/jobdescription/${jobdescription.id}`}
                       className="btn btn-sm btn-primary"
                     >
                       Bearbeiten
                     </Link>
                     <Link
-                      href={`/jobdescription/${jobDescription.id}/analyze`}
+                      href={`/jobdescription/${jobdescription.id}/analyze`}
                       className="btn btn-sm btn-secondary"
                     >
                       Analysieren
                     </Link>
                     <button
-                      onClick={() => handleDelete(jobDescription.id)}
+                      onClick={() => handleDelete(jobdescription.id)}
                       className="btn btn-sm btn-error"
                     >
                       Löschen
@@ -200,7 +200,7 @@ export default function JobDescriptionListPage() {
                 </div>
               </li>
             ))}
-            {jobDescriptions.length === 0 && (
+            {jobdescriptions.length === 0 && (
               <li className="px-4 py-4 sm:px-6">
                 <p className="text-sm text-base-content/80">
                   Sie haben noch keine Stellenausschreibungen erstellt.
@@ -211,10 +211,10 @@ export default function JobDescriptionListPage() {
         </div>
       </div>
 
-      <CreateJobDescriptionModal
+      <CreatejobdescriptionModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={fetchJobDescriptions}
+        onSuccess={fetchjobdescriptions}
       />
     </LayoutMain>
   );

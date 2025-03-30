@@ -1,6 +1,6 @@
 from .resume_schema import Resume, CareerItem, KeySkillItem, OptionalItem
 from .coverletter_schema import CoverLetter, Sender, Recipient, Paragraphs
-from .jobdescription_schema import JobDescription, Skills, ApplicationProcess
+from .jobdescription_schema import jobdescription, Skills, ApplicationProcess
 from .analysis_schema import (
     Analysis, AtsScore, MatchScore, RecruiterEvaluation,
     ImprovementSuggestions, CoverLetterAnalysis
@@ -9,7 +9,7 @@ from .analysis_schema import (
 __all__ = [
     'Resume', 'CareerItem', 'KeySkillItem', 'OptionalItem',
     'CoverLetter', 'Sender', 'Recipient', 'Paragraphs',
-    'JobDescription', 'Skills', 'ApplicationProcess',
+    'jobdescription', 'Skills', 'ApplicationProcess',
     'Analysis', 'AtsScore', 'MatchScore', 'RecruiterEvaluation',
     'ImprovementSuggestions', 'CoverLetterAnalysis'
 ]

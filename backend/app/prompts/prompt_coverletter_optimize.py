@@ -9,7 +9,7 @@ def get_prompt_messages(coverletter_content: dict, job_description: dict, improv
     Zudem soll der Betreff des Anschreibens (subject) mit den Feldern job_title, company und application_process.contact_person der Jobbeschreibung abgeglichen werden.
     
     :param coverletter_content: Das strukturierte Anschreiben (JSON) gemäß COVERLETTER_SCHEMA.
-    :param job_description: Die strukturierte Jobbeschreibung (JSON) gemäß JOBDESCRIPTION_SCHEMA.
+    :param job_description: Die strukturierte Jobbeschreibung (JSON) gemäß jobdescription_SCHEMA.
     :param improvement_suggestions: Dictionary mit Verbesserungsvorschlägen.
     :param language: 'en' | 'de' | 'pl'
     :return: Liste von Nachrichten für das KI-Modell.
