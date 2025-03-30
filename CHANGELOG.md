@@ -1,5 +1,28 @@
 # Changelog
 
+## [2024-03-19] - 11:45 Uhr
+
+### Verbessert
+- Upload und Strukturierungsprozess der Lebensläufe optimiert
+  - Verbesserte visuelle Darstellung des Strukturierungsprozesses direkt in den Karten
+  - Fortschrittsbalken und Status-Indikatoren für besseres Feedback
+  - Seite bleibt während der Strukturierung vollständig bedienbar
+  - Sortierung der Lebensläufe nach Erstellungsdatum (neueste zuerst)
+
+### Hinzugefügt
+- Neue Status-Visualisierungen:
+  - Ladebalken und Spinner für "Wird strukturiert..."
+  - Grünes Häkchen für erfolgreich strukturierte Dokumente
+  - Rotes X für Fehler bei der Strukturierung
+- Verbesserte Button-States:
+  - Deaktiviert während der Strukturierung
+  - Dynamischer Button-Text basierend auf Status
+
+### Technisch
+- Implementierung von asynchroner Dokumentenverarbeitung
+- Optimierte Statusverwaltung mit visuellen Indikatoren
+- Verbesserte Fehlerbehandlung und Benutzer-Feedback
+
 ## [2025-03-29 10:15] - Bugfix: Resume API und ModalEditResume
 
 ### Geändert

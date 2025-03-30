@@ -23,35 +23,45 @@ export default function ResumeListPage() {
   const [isStructuring, setIsStructuring] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingResumeId, setEditingResumeId] = useState<string | null>(null);
+  const [processingResumes, setProcessingResumes] = useState<Set<string>>(new Set());
 
   const fetchResumes = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       const response: ApiResponse<Resume[]> = await resumeApi.getAll();
-      console.log('Resumes response:', response); // Debug log
       
       if (response.status === 'success' && response.data) {
-        setResumes(response.data);
+        // Sortiere Resumes nach Erstellungsdatum (neueste zuerst)
+        const sortedResumes = response.data.sort((a, b) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        setResumes(sortedResumes);
         
         // Prüfe auf unstrukturierte Dokumente
-        const unstructuredDocs = response.data.filter(doc => doc.status === 'unstructured');
+        const unstructuredDocs = sortedResumes.filter(doc => doc.status === 'unstructured');
         if (unstructuredDocs.length > 0 && session?.user?.email) {
-          setIsStructuring(true);
-          await structureMultipleDocuments(
+          // Starte Strukturierung im Hintergrund
+          structureMultipleDocuments(
             unstructuredDocs.map(doc => ({
               id: doc.id,
               type: 'resume',
               status: doc.status
             })),
             session.user.email
-          );
-          // Lade die Daten nach der Strukturierung neu
-          const updatedResponse = await resumeApi.getAll();
-          if (updatedResponse.status === 'success') {
-            setResumes(updatedResponse.data);
-          }
-          setIsStructuring(false);
+          ).then(async () => {
+            // Lade die Daten nach der Strukturierung neu
+            const updatedResponse = await resumeApi.getAll();
+            if (updatedResponse.status === 'success') {
+              const updatedSortedResumes = updatedResponse.data.sort((a, b) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              setResumes(updatedSortedResumes);
+            }
+          }).catch(err => {
+            console.error('Fehler bei der Strukturierung:', err);
+            toast.error('Fehler bei der Strukturierung einiger Lebensläufe');
+          });
         }
       } else {
         throw new Error('Keine Daten vom Server erhalten');
@@ -83,13 +93,38 @@ export default function ResumeListPage() {
     try {
       setIsUploading(true);
       const title = filename.replace(/\.[^/.]+$/, '');
+      
+      // Erstelle temporäre Card für sofortiges Feedback
+      const tempResume: Resume = {
+        id: `temp-${Date.now()}`,
+        title,
+        content,
+        status: 'processing',
+        createdAt: new Date().toISOString(),
+        userId: session.user.email
+      };
+      
+      // Füge temporäre Card am Anfang der Liste hinzu
+      setResumes(prevResumes => [tempResume, ...prevResumes]);
+      setProcessingResumes(prev => new Set(prev).add(tempResume.id));
+
       const response = await resumeApi.create({
         title,
         content,
       });
       
       if (response.status === "success" && response.data) {
-        await fetchResumes();
+        // Ersetze temporäre Card durch echte Daten
+        setResumes(prevResumes => 
+          prevResumes.map(resume => 
+            resume.id === tempResume.id ? response.data : resume
+          )
+        );
+        setProcessingResumes(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(tempResume.id);
+          return newSet;
+        });
         toast.success('Lebenslauf erfolgreich erstellt');
       } else {
         throw new Error('Fehler beim Erstellen');
@@ -97,6 +132,13 @@ export default function ResumeListPage() {
     } catch (error: any) {
       console.error('Fehler beim Erstellen:', error);
       toast.error(error.message || 'Fehler beim Erstellen des Lebenslaufs');
+      // Entferne temporäre Card bei Fehler
+      setResumes(prevResumes => prevResumes.filter(resume => resume.id !== `temp-${Date.now()}`));
+      setProcessingResumes(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(`temp-${Date.now()}`);
+        return newSet;
+      });
     } finally {
       setIsUploading(false);
     }
@@ -224,26 +266,51 @@ export default function ResumeListPage() {
                   <p className="text-sm text-gray-500">
                     Erstellt am {new Date(resume.createdAt).toLocaleDateString()}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    Status: {resume.status || 'unstructured'}
-                  </p>
-                  {/* Debug-Info */}
-                  <p className="text-xs text-gray-400">ID: {resume.id}</p>
+                  <div className="space-y-2">
+                    {resume.status === 'unstructured' ? (
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-warning">Wird strukturiert...</span>
+                          <div className="loading loading-spinner loading-sm"></div>
+                        </div>
+                        <progress className="progress progress-warning w-full"></progress>
+                      </div>
+                    ) : resume.status === 'structured_complete' ? (
+                      <p className="text-sm text-success flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        Strukturiert
+                      </p>
+                    ) : (
+                      <p className="text-sm text-error flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                        Fehler bei der Strukturierung
+                      </p>
+                    )}
+                  </div>
                   <div className="card-actions justify-end">
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => {
-                        console.log('Clicked resume:', resume); // Debug log
-                        const resumeId = resume._id || resume.id;
-                        if (resumeId) {
-                          handleEdit(resumeId);
-                        } else {
-                          console.error('Keine ID für Resume:', resume);
-                        }
-                      }}
-                    >
-                      Bearbeiten
-                    </button>
+                    {resume.id && processingResumes.has(resume.id) ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="loading loading-spinner loading-sm"></div>
+                        <span className="text-sm text-gray-500">Wird verarbeitet...</span>
+                      </div>
+                    ) : (
+                      <button
+                        className="btn btn-primary"
+                        disabled={resume.status === 'unstructured'}
+                        onClick={() => {
+                          const resumeId = resume._id || resume.id;
+                          if (resumeId) {
+                            handleEdit(resumeId);
+                          }
+                        }}
+                      >
+                        {resume.status === 'unstructured' ? 'Wird vorbereitet...' : 'Bearbeiten'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

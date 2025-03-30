@@ -183,10 +183,10 @@ async def view_document(
 # ###############################
 @app.get("/extract-structured-document")
 async def extract_structured_document(
-    document_id: str = Query(..., description="MongoDB document _id"),
-    document_type: str = Query(..., regex="^(resume|coverletter|jobdescription)$", description="Type of document: resume, coverletter, or jobdescription"),
-    language: str = Query("de", description="Target language: en, de, pl"),
-    user_id: str = Query(..., description="User ID (as string) to restrict access")
+    document_id: str = Query(..., description="Die MongoDB _id des Dokuments"),
+    document_type: str = Query(..., regex="^(resume|coverletter|jobdescription)$", description="Type of document: resume, coverletter, oder jobdescription"),
+    language: str = Query("de", description="Zielsprache: en, de, pl"),
+    user_id: str = Query(..., description="User ID (als String) zur Zugriffsbeschränkung")
 ):
     """
     Extrahiert den 'rawText' eines Dokuments (Resume, Coverletter oder Jobdescription),
@@ -198,13 +198,15 @@ async def extract_structured_document(
     GET /extract-structured-document?document_id=67e2bfb64a73a557d0035844&document_type=resume&language=de&user_id=67e2bfb64a73a557d0035843
 
     Parameter:
-      - document_id: Die MongoDB _id des Dokuments.
-      - document_type: "resume", "coverletter" oder "jobdescription".
-      - language: Zielsprache ("en", "de", "pl").
+      - document_id: Die MongoDB _id des Dokuments
+      - document_type: "resume", "coverletter" oder "jobdescription"
+      - language: Zielsprache ("en", "de", "pl")
+      - user_id: User ID zur Zugriffsbeschränkung
     
-    Rückgabe:
-      JSON mit "status", "document_type" und "result" (das strukturierte Dokument).
+    Rückgabe: 
+      JSON mit "status", "document_type" und "result" (das strukturierte Dokument)
     """
+    # Collection und Prompt-Funktion basierend auf document_type auswählen
     if document_type == "resume":
         collection = collection_resume
         prompt_func = get_prompt_messages_resume
@@ -218,40 +220,62 @@ async def extract_structured_document(
         prompt_func = get_prompt_messages_jobdescription
         structured_key = "structured_jobdescription"
     else:
-        raise HTTPException(status_code=400, detail="Invalid document_type")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Ungültiger document_type: {document_type}. Erlaubte Werte: resume, coverletter, jobdescription"
+        )
 
-    doc = collection.find_one({"_id": ObjectId(document_id)})
-    if not doc:
-        raise HTTPException(status_code=404, detail=f"{document_type.capitalize()} not found in database.")
+    # Dokument laden und Validierung
+    try:
+        doc = collection.find_one({"_id": ObjectId(document_id)})
+        if not doc:
+            raise HTTPException(
+                status_code=404,
+                detail=f"{document_type.capitalize()} mit ID {document_id} nicht gefunden."
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Fehler beim Laden des Dokuments: {str(e)}"
+        )
 
-    # Sicherheitscheck: Prüfen, ob das Dokument zum übergebenen User gehört.
+    # Sicherheitscheck
     if str(doc.get("userId", "")) != user_id:
-        raise HTTPException(status_code=403, detail="Access forbidden: Document does not belong to this user.")
+        raise HTTPException(
+            status_code=403,
+            detail="Zugriff verweigert: Dokument gehört nicht zu diesem Benutzer."
+        )
 
+    # Raw Text validieren
     raw_text = doc.get("rawText")
-    if not raw_text:
-        raise HTTPException(status_code=400, detail="Missing rawText in document")
+    if not raw_text or not isinstance(raw_text, str):
+        raise HTTPException(
+            status_code=400,
+            detail="Dokument enthält keinen gültigen rawText."
+        )
 
+    # Prüfen ob bereits strukturiert und Sprache passt
     existing_language = doc.get("language", "")
     status = doc.get("status", "")
+    existing_structure = doc.get(structured_key)
 
-    # Falls bereits strukturiert + Sprache passt => Ergebnis zurückgeben
-    if status == "structured_complete" and existing_language == language:
+    if status == "structured_complete" and existing_language == language and existing_structure:
         return {
             "status": status,
             "document_type": document_type,
-            "result": doc.get(structured_key)
+            "result": existing_structure
         }
 
+    # Token-Count validieren
     token_count = count_tokens(raw_text, settings.OPENAI_MODEL)
     if token_count > settings.MAX_TOKENS:
         raise HTTPException(
             status_code=400,
-            detail=f"Document is too long: {token_count} tokens. Max allowed: {settings.MAX_TOKENS}"
+            detail=f"Dokument zu lang: {token_count} Tokens. Maximum erlaubt: {settings.MAX_TOKENS}"
         )
 
+    # Prompt erstellen und API-Aufruf
     messages = prompt_func(raw_text, language)
-
     try:
         response = client.chat.completions.create(
             model=settings.OPENAI_MODEL,
@@ -267,11 +291,11 @@ async def extract_structured_document(
         except json.JSONDecodeError:
             structured_json = {"raw_response": ai_output}
             status = "structured_incomplete"
-
     except Exception as e:
         structured_json = {"error": str(e)}
         status = "structured_failed"
 
+    # Update in der Datenbank
     collection.update_one(
         {"_id": ObjectId(document_id)},
         {

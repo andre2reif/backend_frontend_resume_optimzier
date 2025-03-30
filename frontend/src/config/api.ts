@@ -9,7 +9,7 @@ export const API_ENDPOINTS = {
     delete: `${API_BASE_URL}/api/v1/resumes/delete`,
     analyze: `${API_BASE_URL}/api/v1/resumes/analyze`,
     optimize: `${API_BASE_URL}/api/v1/resumes/optimize-resume-from-analysis`,
-    extractStructured: `${API_BASE_URL}/api/v1/resumes/extract-structured`
+    extractStructured: `${API_BASE_URL}/extract-structured-document`
   },
   coverLetters: {
     getAll: `${API_BASE_URL}/api/v1/coverletters/view`,
