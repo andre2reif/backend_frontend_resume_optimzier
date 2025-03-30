@@ -195,30 +195,55 @@ export default function CoverletterListPage() {
     }
 
     try {
-      // Prüfe, ob der Lebenslauf noch in der Liste existiert
-      const coverletterExists = coverletters.some(coverletter => coverletter.id === id);
+      // Prüfe, ob das Anschreiben noch in der Liste existiert
+      const coverletterExists = coverletters.some(coverletter => coverletter._id === id || coverletter.id === id);
       if (!coverletterExists) {
-        console.log('Lebenslauf wurde bereits gelöscht');
+        console.log('Anschreiben wurde bereits gelöscht');
         return;
       }
+
+      // Zeige Toast-Benachrichtigung während des Löschvorgangs
+      const toastId = toast.loading(
+        <div className="flex items-center gap-2 max-w-[300px]">
+          <span className="truncate">"{coverletters.find(c => c._id === id || c.id === id)?.title}" wird gelöscht...</span>
+          <button
+            className="link link-primary whitespace-nowrap"
+            onClick={() => {
+              toast.dismiss(toastId);
+              handleCancelDelete(id);
+            }}
+          >
+            Rückgängig
+          </button>
+        </div>,
+        {
+          position: 'bottom-center',
+          duration: 5000,
+          className: 'toast-start',
+        }
+      );
 
       await coverletterApi.delete(id, session.user.email);
       
       // Aktualisiere die Liste und das deletingCoverletters Set
       setCoverletters(prevCoverletters => {
-        const newCoverletters = prevCoverletters.filter(coverletter => coverletter.id !== id);
+        const newCoverletters = prevCoverletters.filter(coverletter => coverletter._id !== id && coverletter.id !== id);
         // Wenn die Liste leer ist, leere auch das deletingCoverletters Set
         if (newCoverletters.length === 0) {
           setDeletingCoverletters(new Set());
         }
         return newCoverletters;
       });
+
+      // Dismiss loading toast and show success
+      toast.dismiss(toastId);
+      toast.success('Anschreiben erfolgreich gelöscht');
     } catch (error: any) {
-      // Wenn der Fehler ein 404 ist, ignorieren wir ihn, da der Lebenslauf bereits gelöscht wurde
+      // Wenn der Fehler ein 404 ist, ignorieren wir ihn, da das Anschreiben bereits gelöscht wurde
       if (error.message?.includes('404') || error.message?.includes('not found')) {
-        console.log('Lebenslauf wurde bereits gelöscht');
+        console.log('Anschreiben wurde bereits gelöscht');
         setCoverletters(prevCoverletters => {
-          const newCoverletters = prevCoverletters.filter(coverletter => coverletter.id !== id);
+          const newCoverletters = prevCoverletters.filter(coverletter => coverletter._id !== id && coverletter.id !== id);
           // Wenn die Liste leer ist, leere auch das deletingCoverletters Set
           if (newCoverletters.length === 0) {
             setDeletingCoverletters(new Set());
@@ -228,8 +253,8 @@ export default function CoverletterListPage() {
         return;
       }
       
-      console.error('Fehler beim Löschen des Lebenslaufs:', error);
-      toast.error('Fehler beim Löschen des Lebenslaufs');
+      console.error('Fehler beim Löschen des Anschreibens:', error);
+      toast.error('Fehler beim Löschen des Anschreibens');
     }
   };
 
@@ -328,9 +353,12 @@ export default function CoverletterListPage() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {coverletters.length > 0 ? (
             coverletters
-              .filter(coverletter => coverletter.id)
+              .filter(coverletter => {
+                const coverletterId = coverletter._id || coverletter.id;
+                return coverletterId && !deletingCoverletters.has(coverletterId);
+              })
               .map((coverletter) => (
-                <div key={`coverletter-${coverletter.id}`}>
+                <div key={`coverletter-${coverletter._id || coverletter.id}`}>
                   <CardCoverLetter
                     coverLetter={coverletter}
                     processingCoverletters={processingCoverletters}

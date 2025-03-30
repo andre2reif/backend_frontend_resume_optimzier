@@ -100,10 +100,12 @@ export interface StructuredCoverLetter {
 }
 
 export interface CoverLetter {
+  _id: string;
   id: string;
   title: string;
   rawText: string;
   status: 'draft' | 'structured_complete' | 'optimized' | 'unstructured';
+  optimized_status?: 'pending' | 'completed' | 'failed';
   createdAt: string;
   updatedAt: string;
   structured_coverletter?: StructuredCoverLetter;
@@ -178,10 +180,10 @@ export interface Analysis {
   };
 }
 
-export type PatchOperation = {
+export interface PatchOperation {
   op: 'replace' | 'add' | 'remove';
   path: string;
-  value?: any;
+  value: any;
 }
 
 export interface ResumePatch {
@@ -199,9 +201,7 @@ export interface CreateCoverLetterRequest {
 export interface UpdateCoverLetterRequest {
   title?: string;
   rawText?: string;
-  language?: string;
-  status?: CoverLetter['status'];
-  structured_coverletter?: CoverLetter['structured_coverletter'];
-  optimized_coverletter?: CoverLetter['optimized_coverletter'];
-  optimized_status?: CoverLetter['optimized_status'];
+  structured_coverletter?: {
+    cover_letter: StructuredCoverLetter;
+  };
 } 
