@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CoverLetter } from '@/types/api';
 import toast from 'react-hot-toast';
+import { DeleteButton } from '@/components/common/DeleteButton';
 
 interface CardCoverLetterProps {
   coverLetter: CoverLetter;
   onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: string) => Promise<void>;
   onStartDelete: (id: string) => void;
   onCancelDelete: (id: string) => void;
   processingCoverletters: Set<string>;
@@ -30,68 +31,10 @@ export function CardCoverLetter(props: CardCoverLetterProps) {
     deletingCoverletters
   } = props;
 
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [toastId, setToastId] = useState<string | undefined>(undefined);
-
   const coverletterId = coverLetter._id || coverLetter.id;
   const isProcessing = processingCoverletters.has(coverletterId);
   const isBeingDeleted = deletingCoverletters.has(coverletterId);
   const canEdit = coverLetter.status === 'structured_complete';
-
-  const handleDelete = () => {
-    if (!coverletterId) {
-      toast.error('Anschreiben wurde bereits gelöscht');
-      return;
-    }
-
-    setIsDeleting(true);
-    onStartDelete(coverletterId);
-
-    const newToastId = toast.loading(
-      <div className="flex items-center gap-2 max-w-[300px]">
-        <span className="truncate">"{truncateTitle(coverLetter.title)}" wird gelöscht...</span>
-        <button
-          className="link link-primary whitespace-nowrap"
-          onClick={() => {
-            setIsDeleting(false);
-            toast.dismiss(newToastId);
-            setToastId(undefined);
-            onCancelDelete(coverletterId);
-          }}
-        >
-          Rückgängig
-        </button>
-      </div>,
-      {
-        position: 'bottom-center',
-        duration: 5000,
-        className: 'toast-start',
-      }
-    );
-
-    setToastId(newToastId);
-  };
-
-  useEffect(() => {
-    let deleteTimer: NodeJS.Timeout;
-
-    if (isDeleting && coverletterId) {
-      deleteTimer = setTimeout(() => {
-        console.log('5 Sekunden vorbei, nun kann gelöscht werden');
-        onDelete(coverletterId);
-        if (toastId) {
-          toast.dismiss(toastId);
-          setToastId(undefined);
-        }
-      }, 5000);
-    }
-
-    return () => {
-      if (deleteTimer) {
-        clearTimeout(deleteTimer);
-      }
-    };
-  }, [isDeleting, coverletterId, onDelete, toastId]);
 
   // Wenn das Anschreiben im Löschprozess ist oder bereits gelöscht wurde, zeige nichts an
   if (!coverletterId || isBeingDeleted) {
@@ -149,19 +92,18 @@ export function CardCoverLetter(props: CardCoverLetterProps) {
           <button
             className="btn btn-ghost btn-sm"
             onClick={() => onEdit(coverletterId)}
-            disabled={!canEdit || isProcessing || isDeleting}
+            disabled={!canEdit || isProcessing}
           >
             {canEdit ? 'Bearbeiten' : 'Wird vorbereitet...'}
           </button>
-          <button
-            className="btn btn-error btn-sm"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-          </button>
+          <DeleteButton
+            id={coverletterId}
+            title={coverLetter.title}
+            onDelete={onDelete}
+            onStartDelete={onStartDelete}
+            onCancelDelete={onCancelDelete}
+            isDeleting={isBeingDeleted}
+          />
         </div>
       </div>
     </div>

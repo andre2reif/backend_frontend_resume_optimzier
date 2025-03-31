@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { coverletterApi } from '@/lib/api/coverletter';
+import { documentApi } from '@/lib/api/document';
 import { CoverLetter, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
 import FileUpload from '@/components/FileUpload';
@@ -189,7 +190,12 @@ export default function CoverletterListPage() {
   };
 
   const handleDelete = async (id: string) => {
+    console.log('CoverletterPage: handleDelete called for ID:', id);
+    console.log('CoverletterPage: Current session:', session?.user?.email);
+    console.log('CoverletterPage: Current coverletters:', coverletters);
+
     if (!session?.user?.email) {
+      console.log('CoverletterPage: No user session found');
       toast.error('Bitte melden Sie sich an');
       return;
     }
@@ -197,55 +203,53 @@ export default function CoverletterListPage() {
     try {
       // Prüfe, ob das Anschreiben noch in der Liste existiert
       const coverletterExists = coverletters.some(coverletter => coverletter._id === id || coverletter.id === id);
+      console.log('CoverletterPage: Coverletter exists check:', coverletterExists);
+      console.log('CoverletterPage: Looking for coverletter with ID:', id);
+      console.log('CoverletterPage: Available coverletter IDs:', coverletters.map(c => ({ id: c.id, _id: c._id })));
+
       if (!coverletterExists) {
-        console.log('Anschreiben wurde bereits gelöscht');
+        console.log('CoverletterPage: Coverletter already deleted or not found');
         return;
       }
 
-      // Zeige Toast-Benachrichtigung während des Löschvorgangs
-      const toastId = toast.loading(
-        <div className="flex items-center gap-2 max-w-[300px]">
-          <span className="truncate">"{coverletters.find(c => c._id === id || c.id === id)?.title}" wird gelöscht...</span>
-          <button
-            className="link link-primary whitespace-nowrap"
-            onClick={() => {
-              toast.dismiss(toastId);
-              handleCancelDelete(id);
-            }}
-          >
-            Rückgängig
-          </button>
-        </div>,
-        {
-          position: 'bottom-center',
-          className: 'toast-start',
-        }
-      );
+      console.log('CoverletterPage: About to call documentApi.delete with params:', {
+        id,
+        email: session.user.email,
+        type: 'coverletter'
+      });
 
-      // Lösche das Anschreiben über die API
-      await coverletterApi.delete(id, session.user.email);
-      
+      const deleteResponse = await documentApi.delete(id, session.user.email, 'coverletter');
+      console.log('CoverletterPage: Delete API response:', deleteResponse);
+
       // Aktualisiere die Liste und das deletingCoverletters Set
+      console.log('CoverletterPage: Updating coverletters list');
       setCoverletters(prevCoverletters => {
         const newCoverletters = prevCoverletters.filter(coverletter => coverletter._id !== id && coverletter.id !== id);
+        console.log('CoverletterPage: New coverletters list:', newCoverletters);
         // Wenn die Liste leer ist, leere auch das deletingCoverletters Set
         if (newCoverletters.length === 0) {
+          console.log('CoverletterPage: No coverletters left, clearing deletingCoverletters set');
           setDeletingCoverletters(new Set());
         }
         return newCoverletters;
       });
-
-      // Dismiss loading toast and show success
-      toast.dismiss(toastId);
-      toast.success('Anschreiben erfolgreich gelöscht');
     } catch (error: any) {
+      console.error('CoverletterPage: Error during delete:', error);
+      console.error('CoverletterPage: Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+
       // Wenn der Fehler ein 404 ist, ignorieren wir ihn, da das Anschreiben bereits gelöscht wurde
       if (error.message?.includes('404') || error.message?.includes('not found')) {
-        console.log('Anschreiben wurde bereits gelöscht');
+        console.log('CoverletterPage: Coverletter already deleted (404)');
         setCoverletters(prevCoverletters => {
           const newCoverletters = prevCoverletters.filter(coverletter => coverletter._id !== id && coverletter.id !== id);
+          console.log('CoverletterPage: Updating coverletters list after 404:', newCoverletters);
           // Wenn die Liste leer ist, leere auch das deletingCoverletters Set
           if (newCoverletters.length === 0) {
+            console.log('CoverletterPage: No coverletters left after 404, clearing deletingCoverletters set');
             setDeletingCoverletters(new Set());
           }
           return newCoverletters;
@@ -253,7 +257,7 @@ export default function CoverletterListPage() {
         return;
       }
       
-      console.error('Fehler beim Löschen des Anschreibens:', error);
+      console.error('CoverletterPage: Error deleting coverletter:', error);
       toast.error('Fehler beim Löschen des Anschreibens');
     }
   };

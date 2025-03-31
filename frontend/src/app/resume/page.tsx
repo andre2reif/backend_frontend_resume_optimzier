@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { resumeApi } from '@/lib/api/resume';
+import { documentApi } from '@/lib/api/document';
 import { Resume, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
 import FileUpload from '@/components/FileUpload';
@@ -157,33 +158,66 @@ export default function ResumeListPage() {
   };
 
   const handleDelete = async (id: string) => {
+    console.log('ResumePage: handleDelete called for ID:', id);
+    console.log('ResumePage: Current session:', session?.user?.email);
+    console.log('ResumePage: Current resumes:', resumes);
+
+    if (!session?.user?.email) {
+      console.log('ResumePage: No user session found');
+      toast.error('Bitte melden Sie sich an');
+      return;
+    }
+
     try {
       // Prüfe, ob der Lebenslauf noch in der Liste existiert
       const resumeExists = resumes.some(resume => resume._id === id || resume.id === id);
+      console.log('ResumePage: Resume exists check:', resumeExists);
+      console.log('ResumePage: Looking for resume with ID:', id);
+      console.log('ResumePage: Available resume IDs:', resumes.map(r => ({ id: r.id, _id: r._id })));
+
       if (!resumeExists) {
-        console.log('Lebenslauf wurde bereits gelöscht');
+        console.log('ResumePage: Resume already deleted or not found');
         return;
       }
 
-      await resumeApi.delete(id);
-      
+      console.log('ResumePage: About to call documentApi.delete with params:', {
+        id,
+        email: session.user.email,
+        type: 'resume'
+      });
+
+      const deleteResponse = await documentApi.delete(id, session.user.email, 'resume');
+      console.log('ResumePage: Delete API response:', deleteResponse);
+
       // Aktualisiere die Liste und das deletingResumes Set
+      console.log('ResumePage: Updating resumes list');
       setResumes(prevResumes => {
         const newResumes = prevResumes.filter(resume => resume._id !== id && resume.id !== id);
+        console.log('ResumePage: New resumes list:', newResumes);
         // Wenn die Liste leer ist, leere auch das deletingResumes Set
         if (newResumes.length === 0) {
+          console.log('ResumePage: No resumes left, clearing deletingResumes set');
           setDeletingResumes(new Set());
         }
         return newResumes;
       });
     } catch (error: any) {
+      console.error('ResumePage: Error during delete:', error);
+      console.error('ResumePage: Error details:', {
+        message: error.message,
+        stack: error.stack,
+        response: error.response
+      });
+
       // Wenn der Fehler ein 404 ist, ignorieren wir ihn, da der Lebenslauf bereits gelöscht wurde
       if (error.message?.includes('404') || error.message?.includes('not found')) {
-        console.log('Lebenslauf wurde bereits gelöscht');
+        console.log('ResumePage: Resume already deleted (404)');
         setResumes(prevResumes => {
           const newResumes = prevResumes.filter(resume => resume._id !== id && resume.id !== id);
+          console.log('ResumePage: Updating resumes list after 404:', newResumes);
           // Wenn die Liste leer ist, leere auch das deletingResumes Set
           if (newResumes.length === 0) {
+            console.log('ResumePage: No resumes left after 404, clearing deletingResumes set');
             setDeletingResumes(new Set());
           }
           return newResumes;
@@ -191,7 +225,7 @@ export default function ResumeListPage() {
         return;
       }
       
-      console.error('Fehler beim Löschen des Lebenslaufs:', error);
+      console.error('ResumePage: Error deleting resume:', error);
       toast.error('Fehler beim Löschen des Lebenslaufs');
     }
   };
