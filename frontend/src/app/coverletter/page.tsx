@@ -218,11 +218,11 @@ export default function CoverletterListPage() {
         </div>,
         {
           position: 'bottom-center',
-          duration: 5000,
           className: 'toast-start',
         }
       );
 
+      // Lösche das Anschreiben über die API
       await coverletterApi.delete(id, session.user.email);
       
       // Aktualisiere die Liste und das deletingCoverletters Set

@@ -92,7 +92,7 @@ export function ModalEditCoverletter({
       setIsSaving(true);
       
       const operations = [{
-        op: 'replace',
+        op: 'replace' as const,
         path: '/structured_coverletter',
         value: {
           cover_letter: formData
