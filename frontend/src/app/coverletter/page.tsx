@@ -13,7 +13,9 @@ import LayoutMain from '@/components/layout/LayoutMain';
 import { CreateCoverletterModal } from '@/components/coverletter/CreateCoverletterModal';
 import { structureMultipleDocuments } from '@/lib/services/structureService';
 import { ModalEditCoverletter } from '@/components/coverletter/ModalEditCoverletter';
-import { CardCoverLetter } from '@/components/coverletter/CardCoverletter';
+import CardCoverletter from '@/components/coverletter/CardCoverletter';
+import { motion, AnimatePresence } from 'framer-motion';
+import { staggerContainer, listItem } from '@/lib/animations/animation-variants';
 
 export default function CoverletterListPage() {
   const { data: session, status } = useSession();
@@ -354,32 +356,41 @@ export default function CoverletterListPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {coverletters.length > 0 ? (
-            coverletters
-              .filter(coverletter => {
-                const coverletterId = coverletter._id || coverletter.id;
-                return coverletterId && !deletingCoverletters.has(coverletterId);
-              })
-              .map((coverletter) => (
-                <div key={`coverletter-${coverletter._id || coverletter.id}`}>
-                  <CardCoverLetter
-                    coverLetter={coverletter}
-                    processingCoverletters={processingCoverletters}
-                    deletingCoverletters={deletingCoverletters}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onStartDelete={handleStartDelete}
-                    onCancelDelete={handleCancelDelete}
-                  />
-                </div>
-              ))
-          ) : (
-            <div className="col-span-full text-center">
-              <p>Keine Lebensläufe vorhanden</p>
-            </div>
-          )}
-        </div>
+        <motion.div 
+          className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          <AnimatePresence>
+            {coverletters.length > 0 ? (
+              coverletters
+                .filter(coverletter => {
+                  const coverletterId = coverletter._id || coverletter.id;
+                  return coverletterId && !deletingCoverletters.has(coverletterId);
+                })
+                .map((coverletter) => (
+                  <motion.div 
+                    key={`coverletter-${coverletter._id || coverletter.id}`}
+                    variants={listItem}
+                    layout
+                  >
+                    <CardCoverletter
+                      coverletter={coverletter}
+                      onDelete={handleDelete}
+                    />
+                  </motion.div>
+                ))
+            ) : (
+              <motion.div 
+                className="col-span-full text-center"
+                variants={listItem}
+              >
+                <p>Keine Lebensläufe vorhanden</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
 
       <CreateCoverletterModal

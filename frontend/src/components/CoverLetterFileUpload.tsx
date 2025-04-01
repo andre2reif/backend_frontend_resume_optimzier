@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react'
 import { useTranslation } from '@/lib/i18n/client'
 import { showErrorToast } from '@/lib/toast/utils'
-import { extractTextApi } from '@/lib/api'
+import { API_ENDPOINTS } from '@/config/api'
 
 interface CoverLetterFileUploadProps {
   onSuccess: (title: string, content: string) => Promise<void>
@@ -53,12 +53,34 @@ export default function CoverLetterFileUpload({ onSuccess, onClose, isOpen }: Co
 
     try {
       setIsUploading(true)
-      const { text } = await extractTextApi.extract(file)
+      console.log('Starting file extraction for:', file.name)
+      
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await fetch(API_ENDPOINTS.extractText, {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Extraction failed:', errorData)
+        throw new Error(errorData.detail || t('errors.extractFailed'))
+      }
+
+      const { text } = await response.json()
+      
+      if (!text || text.trim() === '') {
+        throw new Error(t('errors.extractFailed'))
+      }
+
+      console.log('Text extraction successful, length:', text.length)
       setExtractedText(text)
       setTitle(file.name.replace(/\.[^/.]+$/, ''))
     } catch (error) {
       console.error('Error extracting text:', error)
-      showErrorToast(t('errors.extractFailed'))
+      showErrorToast(error instanceof Error ? error.message : t('errors.extractFailed'))
     } finally {
       setIsUploading(false)
     }

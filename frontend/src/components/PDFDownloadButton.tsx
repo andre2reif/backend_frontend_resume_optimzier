@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { PDFDownloadLink, BlobProvider } from '@react-pdf/renderer';
 import ResumePDF from './ResumePDF';
 import { Resume } from '@/types/api';
 
@@ -10,31 +10,37 @@ interface PDFDownloadButtonProps {
   className?: string;
 }
 
-export default function PDFDownloadButton({ resume, className }: PDFDownloadButtonProps) {
-  const [isClient, setIsClient] = useState(false);
+interface BlobProviderRenderProps {
+  blob: Blob | null;
+  url: string | null;
+  loading: boolean;
+  error: Error | null;
+}
 
-  // PDFDownloadLink muss auf dem Client gerendert werden
-  useState(() => {
-    setIsClient(true);
-  });
-
-  if (!isClient) {
-    return (
-      <button disabled className={className}>
-        PDF wird vorbereitet...
-      </button>
-    );
+export default function PDFDownloadButton({ resume, className = '' }: PDFDownloadButtonProps) {
+  if (!resume) {
+    console.error('PDFDownloadButton: Resume ist undefined');
+    return null;
   }
+
+  const fileName = resume.title 
+    ? `${resume.title.toLowerCase().replace(/\s+/g, '-')}.pdf`
+    : 'lebenslauf.pdf';
 
   return (
     <PDFDownloadLink
       document={<ResumePDF resume={resume} />}
-      fileName={`${resume.title.toLowerCase().replace(/\s+/g, '-')}.pdf`}
+      fileName={fileName}
       className={className}
     >
-      {({ loading }) =>
-        loading ? 'PDF wird generiert...' : 'Als PDF herunterladen'
-      }
+      {({ loading }: BlobProviderRenderProps) => (
+        <button 
+          className="btn btn-primary btn-sm" 
+          disabled={loading}
+        >
+          {loading ? 'Wird erstellt...' : 'PDF herunterladen'}
+        </button>
+      )}
     </PDFDownloadLink>
   );
 } 

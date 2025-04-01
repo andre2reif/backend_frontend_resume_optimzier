@@ -2,14 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { useDeleteStore } from '@/lib/stores/deleteStore';
 
 interface DeleteButtonProps {
   id: string;
   title: string;
   onDelete: (id: string) => Promise<void>;
-  onStartDelete: (id: string) => void;
-  onCancelDelete: (id: string) => void;
-  isDeleting?: boolean;
   disabled?: boolean;
   className?: string;
 }
@@ -23,25 +21,34 @@ export function DeleteButton({
   id,
   title,
   onDelete,
-  onStartDelete,
-  onCancelDelete,
-  isDeleting: externalIsDeleting,
   disabled = false,
   className = ''
 }: DeleteButtonProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
   const [toastId, setToastId] = useState<string | undefined>(undefined);
   const deleteTimerRef = useRef<NodeJS.Timeout>();
+  const { startDelete, cancelDelete, isDeleting } = useDeleteStore();
 
   const handleDelete = () => {
-    console.log('DeleteButton: Delete button clicked');
+    console.log('DeleteButton: Delete button clicked with ID:', id);
+    
+    // Prüfe, ob eine gültige ID vorhanden ist
     if (!id) {
-      console.log('DeleteButton: No ID provided, cannot delete');
-      toast.error('Dokument wurde bereits gelöscht');
+      console.error('DeleteButton: No ID provided');
+      toast.error('Fehler: Keine Dokument-ID gefunden');
+      return;
+    }
+
+    // Prüfe, ob die ID ein gültiges Format hat (MongoDB ObjectId)
+    if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+      console.error('DeleteButton: Invalid ID format:', id);
+      toast.error('Fehler: Ungültiges ID-Format');
       return;
     }
 
     console.log('DeleteButton: Starting delete process for document:', id);
+    
+    // Starte den Löschvorgang im Store
+    startDelete(id);
     
     // Zeige Toast an
     const newToastId = toast.loading(
@@ -57,7 +64,7 @@ export function DeleteButton({
             }
             toast.dismiss(newToastId);
             setToastId(undefined);
-            onCancelDelete(id);
+            cancelDelete(id);
           }}
         >
           Rückgängig
@@ -85,9 +92,11 @@ export function DeleteButton({
             toast.dismiss(toastId);
             setToastId(undefined);
           }
+          cancelDelete(id);
         })
         .catch((error) => {
           console.error('DeleteButton: Error during delete operation:', error);
+          cancelDelete(id);
         });
     }, 5000);
   };
@@ -106,7 +115,7 @@ export function DeleteButton({
     <button
       className={`btn btn-error btn-sm ${className}`}
       onClick={handleDelete}
-      disabled={isDeleting || externalIsDeleting || disabled}
+      disabled={isDeleting(id) || disabled}
     >
       <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
         <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />

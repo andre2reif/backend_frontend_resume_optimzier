@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { coverletterApi } from '@/lib/api/coverletter';
 import { Coverletter, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
-import PDFDownloadButton from '@/components/PDFDownloadButton';
 import LayoutMain from '@/components/layout/LayoutMain';
 
 export default function CoverletterEditPage({ params }: { params: { id: string } }) {
@@ -123,12 +122,6 @@ export default function CoverletterEditPage({ params }: { params: { id: string }
             <p className="mt-2 text-sm text-base-content/80">
               Bearbeiten Sie Ihren Lebenslauf und optimieren Sie ihn für ATS-Systeme.
             </p>
-          </div>
-          <div className="mt-4 sm:ml-16 sm:mt-0">
-            <PDFDownloadButton
-              coverletter={coverletter}
-              className="btn btn-primary"
-            />
           </div>
         </div>
 

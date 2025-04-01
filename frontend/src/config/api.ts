@@ -31,7 +31,7 @@ export const API_ENDPOINTS = {
     extractStructured: `${API_BASE_URL}/extract-structured-document`,
     analyze: `${API_BASE_URL}/api/v1/jobdescriptions/analyze`
   },
-  extractText: `${API_BASE_URL}/api/v1/extract-text`,
+  extractText: `${API_BASE_URL}/extract-text`,
   analyze: `${API_BASE_URL}/api/v1/coverletters/analysis-ats`
 
 } as const 
