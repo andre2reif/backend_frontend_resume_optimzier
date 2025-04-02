@@ -24,10 +24,14 @@ export default async function RootLayout({
         <SessionProvider session={session}>
           <main className="min-h-screen">
             <Toaster 
-              position="bottom-center"
+              position="bottom-left"
               toastOptions={{
-                className: 'toast-start',
+                className: 'toast-start !bg-black !text-white',
                 duration: 5000,
+                style: {
+                  background: 'black',
+                  color: 'white',
+                },
               }}
             />
             {children}

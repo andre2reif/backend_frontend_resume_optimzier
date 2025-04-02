@@ -52,10 +52,10 @@ export function DeleteButton({
     
     // Zeige Toast an
     const newToastId = toast.loading(
-      <div className="flex items-center gap-2 max-w-[300px]">
+      <div className="flex items-center gap-2 max-w-[400px]  whitespace-nowrap">
         <span className="truncate">"{truncateTitle(title)}" wird gelöscht...</span>
         <button
-          className="link link-primary whitespace-nowrap"
+          className="link text-white hover:text-white/80"
           onClick={() => {
             console.log('DeleteButton: Cancel button clicked, cancelling delete process');
             if (deleteTimerRef.current) {
@@ -71,9 +71,9 @@ export function DeleteButton({
         </button>
       </div>,
       {
-        position: 'bottom-center',
+        position: 'bottom-left',
         duration: 5000,
-        className: 'toast-start',
+        className: 'bg-black text-white',
       }
     );
 

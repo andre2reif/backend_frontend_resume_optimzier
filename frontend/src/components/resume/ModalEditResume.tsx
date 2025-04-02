@@ -574,124 +574,128 @@ export default function ModalEditResume({ isOpen, onClose, resumeId, onSave }: M
   if (!isOpen) return null;
 
   return (
-    <div className="modal modal-open">
-      <div className="modal-box w-11/12 max-w-5xl">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Lebenslauf bearbeiten</h3>
-          <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </div>
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" onClick={onClose} />
+        
+        <div className="relative w-full max-w-5xl rounded-lg bg-base-100 p-6 shadow-xl">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-lg">Lebenslauf bearbeiten</h3>
+            <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost">
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
 
-        {/* Debug-Informationen */}
-        {debugInfo && (
-          <div className="bg-base-200 p-4 rounded-lg mb-4">
-            <h4 className="font-bold mb-2">Debug-Informationen:</h4>
-            <pre className="text-xs whitespace-pre-wrap">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <span className="loading loading-spinner loading-lg"></span>
-          </div>
-        ) : error ? (
-          <div className="alert alert-error">
-            <span>{error}</span>
-          </div>
-        ) : resume ? (
-          <div className="space-y-4">
-            {/* Tabs */}
-            <div className="tabs tabs-boxed">
-              <button
-                className={`tab ${activeTab === 'summary' ? 'tab-active' : ''}`}
-                onClick={() => setActiveTab('summary')}
-              >
-                <DocumentTextIcon className="h-5 w-5 mr-2" />
-                Zusammenfassung
-              </button>
-              <button
-                className={`tab ${activeTab === 'career' ? 'tab-active' : ''}`}
-                onClick={() => setActiveTab('career')}
-              >
-                <BriefcaseIcon className="h-5 w-5 mr-2" />
-                Berufserfahrung
-              </button>
-              <button
-                className={`tab ${activeTab === 'skills' ? 'tab-active' : ''}`}
-                onClick={() => setActiveTab('skills')}
-              >
-                <StarIcon className="h-5 w-5 mr-2" />
-                Fähigkeiten
-              </button>
-              <button
-                className={`tab ${activeTab === 'education' ? 'tab-active' : ''}`}
-                onClick={() => setActiveTab('education')}
-              >
-                <AcademicCapIcon className="h-5 w-5 mr-2" />
-                Ausbildung
-              </button>
-              <button
-                className={`tab ${activeTab === 'languages' ? 'tab-active' : ''}`}
-                onClick={() => setActiveTab('languages')}
-              >
-                <LanguageIcon className="h-5 w-5 mr-2" />
-                Sprachen
-              </button>
-              <button
-                className={`tab ${activeTab === 'optionals' ? 'tab-active' : ''}`}
-                onClick={() => setActiveTab('optionals')}
-              >
-                <StarIcon className="h-5 w-5 mr-2" />
-                Zusätzliches
-              </button>
+          {/* Debug-Informationen */}
+          {/* {debugInfo && (
+            <div className="bg-base-200 p-4 rounded-lg mb-4">
+              <h4 className="font-bold mb-2">Debug-Informationen:</h4>
+              <pre className="text-xs whitespace-pre-wrap">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
             </div>
+          )} */}
 
-            {/* Tab Content */}
-            <div className="mt-4">
-              {renderTabContent()}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <span className="loading loading-spinner loading-lg"></span>
             </div>
-
-            {/* Diff-Anzeige */}
-            {showDiff && diffOperations.length > 0 && (
-              <div className="my-4 p-4 bg-base-200 rounded-lg">
-                <h4 className="font-bold mb-2">Geplante Änderungen:</h4>
-                <pre className="text-sm whitespace-pre-wrap">
-                  {JSON.stringify(diffOperations, null, 2)}
-                </pre>
+          ) : error ? (
+            <div className="alert alert-error">
+              <span>{error}</span>
+            </div>
+          ) : resume ? (
+            <div className="space-y-4">
+              {/* Tabs */}
+              <div className="tabs tabs-boxed">
+                <button
+                  className={`tab ${activeTab === 'summary' ? 'tab-active' : ''}`}
+                  onClick={() => setActiveTab('summary')}
+                >
+                  <DocumentTextIcon className="h-5 w-5 mr-2" />
+                  Zusammenfassung
+                </button>
+                <button
+                  className={`tab ${activeTab === 'career' ? 'tab-active' : ''}`}
+                  onClick={() => setActiveTab('career')}
+                >
+                  <BriefcaseIcon className="h-5 w-5 mr-2" />
+                  Berufserfahrung
+                </button>
+                <button
+                  className={`tab ${activeTab === 'skills' ? 'tab-active' : ''}`}
+                  onClick={() => setActiveTab('skills')}
+                >
+                  <StarIcon className="h-5 w-5 mr-2" />
+                  Fähigkeiten
+                </button>
+                <button
+                  className={`tab ${activeTab === 'education' ? 'tab-active' : ''}`}
+                  onClick={() => setActiveTab('education')}
+                >
+                  <AcademicCapIcon className="h-5 w-5 mr-2" />
+                  Ausbildung
+                </button>
+                <button
+                  className={`tab ${activeTab === 'languages' ? 'tab-active' : ''}`}
+                  onClick={() => setActiveTab('languages')}
+                >
+                  <LanguageIcon className="h-5 w-5 mr-2" />
+                  Sprachen
+                </button>
+                <button
+                  className={`tab ${activeTab === 'optionals' ? 'tab-active' : ''}`}
+                  onClick={() => setActiveTab('optionals')}
+                >
+                  <StarIcon className="h-5 w-5 mr-2" />
+                  Zusätzliches
+                </button>
               </div>
-            )}
 
-            <div className="modal-action">
-              <button className="btn" onClick={onClose}>Abbrechen</button>
-              <button 
-                className="btn btn-secondary" 
-                onClick={handleCheckChanges}
-                disabled={isSaving}
-              >
-                Änderungen prüfen
-              </button>
+              {/* Tab Content */}
+              <div className="mt-4 max-h-[60vh] overflow-y-auto">
+                {renderTabContent()}
+              </div>
+
+              {/* Diff-Anzeige */}
               {showDiff && diffOperations.length > 0 && (
+                <div className="my-4 p-4 bg-base-200 rounded-lg">
+                  <h4 className="font-bold mb-2">Geplante Änderungen:</h4>
+                  <pre className="text-sm whitespace-pre-wrap">
+                    {JSON.stringify(diffOperations, null, 2)}
+                  </pre>
+                </div>
+              )}
+
+              <div className="modal-action">
+                <button className="btn" onClick={onClose}>Abbrechen</button>
                 <button 
-                  className="btn btn-primary" 
-                  onClick={handlePatch}
+                  className="btn btn-secondary" 
+                  onClick={handleCheckChanges}
                   disabled={isSaving}
                 >
-                  {isSaving ? (
-                    <>
-                      <span className="loading loading-spinner"></span>
-                      Speichert...
-                    </>
-                  ) : (
-                    'Änderungen speichern'
-                  )}
+                  Änderungen prüfen
                 </button>
-              )}
+                {showDiff && diffOperations.length > 0 && (
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={handlePatch}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? (
+                      <>
+                        <span className="loading loading-spinner"></span>
+                        Speichert...
+                      </>
+                    ) : (
+                      'Änderungen speichern'
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </div>
   );

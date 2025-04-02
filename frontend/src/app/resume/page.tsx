@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+
 import Link from 'next/link';
 import { resumeApi } from '@/lib/api/resume';
 import { documentApi } from '@/lib/api/document';
@@ -28,6 +29,7 @@ export default function ResumeListPage() {
   const [processingResumes, setProcessingResumes] = useState<Set<string>>(new Set());
   const [deletingResumes, setDeletingResumes] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadSectionVisible, setIsUploadSectionVisible] = useState(false);
 
   const fetchResumes = useCallback(async () => {
     try {
@@ -45,6 +47,9 @@ export default function ResumeListPage() {
         // Prüfe auf unstrukturierte Dokumente
         const unstructuredDocs = sortedResumes.filter(doc => doc.status === 'unstructured');
         if (unstructuredDocs.length > 0 && session?.user?.email) {
+          console.log('Gefundene unstrukturierte Dokumente:', unstructuredDocs);
+          setIsStructuring(true);
+          
           // Starte Strukturierung im Hintergrund
           structureMultipleDocuments(
             unstructuredDocs.map(doc => ({
@@ -54,6 +59,7 @@ export default function ResumeListPage() {
             })),
             session.user.email
           ).then(async () => {
+            console.log('Strukturierungsprozess abgeschlossen, lade Daten neu');
             // Lade die Daten nach der Strukturierung neu
             const updatedResponse = await resumeApi.getAll();
             if (updatedResponse.status === 'success' && updatedResponse.data) {
@@ -61,10 +67,13 @@ export default function ResumeListPage() {
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
               );
               setResumes(updatedSortedResumes);
+              setIsStructuring(false);
+              toast.success('Lebensläufe wurden erfolgreich strukturiert');
             }
           }).catch(err => {
             console.error('Fehler bei der Strukturierung:', err);
             toast.error('Fehler bei der Strukturierung einiger Lebensläufe');
+            setIsStructuring(false);
           });
         }
       } else {
@@ -139,6 +148,38 @@ export default function ResumeListPage() {
           return newSet;
         });
         toast.success('Lebenslauf erfolgreich erstellt');
+        setIsUploadSectionVisible(false);
+        
+        // Starte Strukturierung für das neue Dokument
+        if (response.data.status === 'unstructured') {
+          console.log('Starte Strukturierung für neues Dokument:', response.data);
+          setIsStructuring(true);
+          
+          structureMultipleDocuments(
+            [{
+              id: response.data.id,
+              type: 'resume',
+              status: response.data.status
+            }],
+            session.user.email
+          ).then(async () => {
+            console.log('Strukturierung für neues Dokument abgeschlossen');
+            // Lade die Daten nach der Strukturierung neu
+            const updatedResponse = await resumeApi.getAll();
+            if (updatedResponse.status === 'success' && updatedResponse.data) {
+              const updatedSortedResumes = updatedResponse.data.sort((a, b) => 
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+              setResumes(updatedSortedResumes);
+              setIsStructuring(false);
+              toast.success('Lebenslauf wurde erfolgreich strukturiert');
+            }
+          }).catch(err => {
+            console.error('Fehler bei der Strukturierung des neuen Dokuments:', err);
+            toast.error('Fehler bei der Strukturierung des Lebenslaufs');
+            setIsStructuring(false);
+          });
+        }
       } else {
         throw new Error('Fehler beim Erstellen');
       }
@@ -263,7 +304,7 @@ export default function ResumeListPage() {
     handleModalClose();
   };
 
-  if (status === 'loading' || isLoading) {
+  if (status === 'loading') {
     return (
       <LayoutMain>
         <div className="flex min-h-screen items-center justify-center">
@@ -285,7 +326,6 @@ export default function ResumeListPage() {
 
   return (
     <LayoutMain>
-      <div className="space-y-6">
         <div className="sm:flex sm:items-center">
           <div className="sm:flex-auto">
             <h1 className="text-2xl font-semibold text-base-content">Meine Lebensläufe</h1>
@@ -293,23 +333,37 @@ export default function ResumeListPage() {
               Verwalten Sie Ihre Lebensläufe und optimieren Sie sie für Ihre Bewerbungen.
             </p>
             {isStructuring && (
-              <p className="mt-2 text-sm text-warning">
-                Lebensläufe werden strukturiert... Dies kann einige Minuten dauern.
-              </p>
+              <div className="mt-2 flex items-center gap-2 text-sm text-warning">
+                <div className="loading loading-spinner loading-sm"></div>
+                <span>Lebensläufe werden strukturiert... Dies kann einige Minuten dauern.</span>
+              </div>
             )}
           </div>
-          <div className="mt-4 sm:ml-16 sm:mt-0">
+          <div className="mt-4 sm:ml-16 sm:mt-0 flex gap-2">
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="btn btn-primary"
+              disabled={isLoading}
             >
               Neuer Lebenslauf
+            </button>
+            <button
+              onClick={() => setIsUploadSectionVisible(true)}
+              className="btn btn-secondary"
+              disabled={isLoading}
+            >
+              Lebenslauf hochladen
             </button>
           </div>
         </div>
 
-        <div className="overflow-hidden bg-base-200 shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
+        {/* Upload Modal */}
+        <dialog id="upload_modal" className={`modal ${isUploadSectionVisible ? 'modal-open' : ''}`} onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            setIsUploadSectionVisible(false);
+          }
+        }}>
+          <div className="modal-box">
             <h3 className="text-lg font-medium leading-6 text-base-content">
               Neuen Lebenslauf hochladen
             </h3>
@@ -320,29 +374,36 @@ export default function ResumeListPage() {
               <FileUpload onUpload={handleFileUpload} disabled={isUploading} />
             </div>
           </div>
-        </div>
+          
+        </dialog>
 
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {resumes.length > 0 ? (
-            resumes.map((resume) => (
-              <CardResume
-                key={resume._id || resume.id}
-                resume={resume}
-                processingResumes={processingResumes}
-                deletingResumes={deletingResumes}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onStartDelete={handleStartDelete}
-                onCancelDelete={handleCancelDelete}
-              />
-            ))
-          ) : (
-            <div key="empty" className="col-span-full text-center">
-              <p>Keine Lebensläufe vorhanden</p>
-            </div>
-          )}
-        </div>
-      </div>
+        {isLoading && resumes.length === 0 ? (
+          <div className="flex justify-center py-8">
+            <div className="loading loading-spinner loading-lg"></div>
+          </div>
+        ) : (
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {resumes.length > 0 ? (
+              resumes.map((resume) => (
+                <CardResume
+                  key={resume._id || resume.id}
+                  resume={resume}
+                  processingResumes={processingResumes}
+                  deletingResumes={deletingResumes}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onStartDelete={handleStartDelete}
+                  onCancelDelete={handleCancelDelete}
+                />
+              ))
+            ) : (
+              <div key="empty" className="col-span-full text-center">
+                <p>Keine Lebensläufe vorhanden</p>
+              </div>
+            )}
+          </div>
+        )}
+      
 
       <CreateResumeModal
         isOpen={isCreateModalOpen}

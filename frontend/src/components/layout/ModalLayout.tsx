@@ -14,7 +14,7 @@ export default function ModalLayout({ isOpen, onClose, title, children }: ModalL
 
   return (
     <dialog className="modal modal-open" onClose={onClose}>
-      <div className="modal-box relative">
+      <div className="modal-box bg-red-600 relative">
         <button
           onClick={onClose}
           className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"

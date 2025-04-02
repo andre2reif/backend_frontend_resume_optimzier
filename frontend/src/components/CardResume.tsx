@@ -31,7 +31,7 @@ export default function CardResume({ resume, processingResumes, deletingResumes,
           {truncateTitle(resume.title)}
         </h2>
         <p className="text-sm text-gray-500">
-          Erstellt am {new Date(resume.createdAt).toLocaleDateString()}
+          Erstellt am {resume.createdAt ? new Date(resume.createdAt).toLocaleDateString('de-DE') : 'Datum nicht verfügbar'}
         </p>
         <div className="space-y-2">
           {resume.status === 'unstructured' ? (
