@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useDeleteStore } from '@/lib/stores/deleteStore';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DeleteButtonProps {
   id: string;
@@ -12,7 +13,7 @@ interface DeleteButtonProps {
   className?: string;
 }
 
-function truncateTitle(title: string, maxLength: number = 20): string {
+function truncateTitle(title: string, maxLength: number = 30): string {
   if (title.length <= maxLength) return title;
   return `${title.substring(0, maxLength)}...`;
 }
@@ -52,10 +53,18 @@ export function DeleteButton({
     
     // Zeige Toast an
     const newToastId = toast.loading(
-      <div className="flex items-center gap-2 max-w-[400px]  whitespace-nowrap">
-        <span className="truncate">"{truncateTitle(title)}" wird gelöscht...</span>
-        <button
-          className="link text-white hover:text-white/80"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.3 }}
+        className="flex items-center gap-4 py-2"
+      >
+        <span className="text-base">"{truncateTitle(title)}" wird gelöscht...</span>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="text-blue-300 border-b-2 border-blue-300 hover:text-blue-200 hover:border-blue-200 transition-colors"
           onClick={() => {
             console.log('DeleteButton: Cancel button clicked, cancelling delete process');
             if (deleteTimerRef.current) {
@@ -68,12 +77,18 @@ export function DeleteButton({
           }}
         >
           Rückgängig
-        </button>
-      </div>,
+        </motion.button>
+      </motion.div>,
       {
         position: 'bottom-left',
         duration: 5000,
-        className: 'bg-black text-white',
+        style: {
+          minWidth: '450px',
+          backgroundColor: 'black',
+          color: 'white',
+          padding: '0.5rem 1rem',
+          borderRadius: '0.5rem',
+        }
       }
     );
 
@@ -113,13 +128,11 @@ export function DeleteButton({
 
   return (
     <button
-      className={`btn btn-error btn-sm ${className}`}
+      className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
       onClick={handleDelete}
       disabled={isDeleting(id) || disabled}
     >
-      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-      </svg>
+      Löschen
     </button>
   );
 } 

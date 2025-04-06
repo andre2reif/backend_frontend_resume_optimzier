@@ -8,14 +8,15 @@ import { coverletterApi } from '@/lib/api/coverletter';
 import { documentApi } from '@/lib/api/document';
 import { CoverLetter, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
-import FileUpload from '@/components/FileUpload';
+import FileUpload from '@/components/upload/FileUpload';
 import LayoutMain from '@/components/layout/LayoutMain';
 import { CreateCoverletterModal } from '@/components/coverletter/CreateCoverletterModal';
 import { structureMultipleDocuments } from '@/lib/services/structureService';
 import { ModalEditCoverletter } from '@/components/coverletter/ModalEditCoverletter';
 import CardCoverletter from '@/components/coverletter/CardCoverletter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { staggerContainer, listItem } from '@/lib/animations/animation-variants';
+import { staggerContainer, listItem, fadeIn, fadeInUp } from '@/lib/animations/animation-variants';
+import { ModalFileUpload } from '@/components/coverletter/ModalFileUpload';
 
 export default function CoverletterListPage() {
   const { data: session, status } = useSession();
@@ -30,6 +31,7 @@ export default function CoverletterListPage() {
   const [processingCoverletters, setProcessingCoverletters] = useState<Set<string>>(new Set());
   const [deletingCoverletters, setDeletingCoverletters] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploadSectionVisible, setIsUploadSectionVisible] = useState(false);
 
   const fetchCoverletters = useCallback(async () => {
     try {
@@ -121,6 +123,27 @@ export default function CoverletterListPage() {
     try {
       setIsUploading(true);
       const title = filename.replace(/\.[^/.]+$/, '');
+      
+      // Erstelle temporäre Card für sofortiges Feedback
+      const tempCoverletter: CoverLetter = {
+        id: `temp-${Date.now()}`,
+        title,
+        content,
+        status: 'processing',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        userId: session.user.email
+      };
+      
+      // Füge temporäre Card am Anfang der Liste hinzu
+      setCoverletters(prevCoverletters => [tempCoverletter, ...prevCoverletters]);
+      setProcessingCoverletters(prev => {
+        const newSet = new Set(prev);
+        if (tempCoverletter.id) {
+          newSet.add(tempCoverletter.id);
+        }
+        return newSet;
+      });
 
       // Erstelle das Anschreiben
       console.log('Sende Anfrage zum Erstellen des Anschreibens:', {
@@ -143,19 +166,28 @@ export default function CoverletterListPage() {
         throw new Error('Keine gültige Antwort vom Server erhalten');
       }
 
-      if (!response.data._id) {
+      // Prüfe auf id oder _id
+      const documentId = response.data.id || response.data._id;
+      if (!documentId) {
         console.error('Antwort ohne ID:', response);
         throw new Error('Keine ID vom Server erhalten');
       }
+
+      // Ersetze temporäre Card durch echte Daten
+      setCoverletters(prevCoverletters => 
+        prevCoverletters.map(coverletter => 
+          coverletter.id === tempCoverletter.id && response.data ? response.data : coverletter
+        ).filter((coverletter): coverletter is CoverLetter => coverletter !== undefined)
+      );
 
       // Warte kurz, bis die Daten in der Datenbank verfügbar sind
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Strukturiere das Anschreiben
       try {
-        console.log('Starte Strukturierung für Anschreiben:', response.data._id);
+        console.log('Starte Strukturierung für Anschreiben:', documentId);
         const structureResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/extract-structured-document?document_id=${response.data._id}&document_type=coverletter&language=de&user_id=${session.user.email}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/extract-structured-document?document_id=${documentId}&document_type=coverletter&language=de&user_id=${session.user.email}`
         );
 
         if (!structureResponse.ok) {
@@ -173,10 +205,28 @@ export default function CoverletterListPage() {
           setCoverletters(updatedResponse.data);
         }
 
-        toast.success('Anschreiben erfolgreich erstellt und strukturiert');
+        // Schließe das Upload-Modal
+        setIsUploadSectionVisible(false);
+        
+        // Zeige Erfolgsmeldung
+        toast.success('Anschreiben erfolgreich hochgeladen und strukturiert', {
+          duration: 4000,
+          position: 'bottom-left',
+          style: {
+            background: '#1a1a1a',
+            color: '#fff',
+          },
+        });
       } catch (error) {
         console.error('Fehler bei der Strukturierung:', error);
-        toast.error('Fehler bei der Strukturierung des Anschreibens');
+        toast.error('Fehler bei der Strukturierung des Anschreibens', {
+          duration: 4000,
+          position: 'bottom-left',
+          style: {
+            background: '#1a1a1a',
+            color: '#fff',
+          },
+        });
         // Lade die Liste trotzdem neu, um den aktuellen Status zu sehen
         const updatedResponse = await coverletterApi.getAll();
         if (updatedResponse.data) {
@@ -185,7 +235,21 @@ export default function CoverletterListPage() {
       }
     } catch (error) {
       console.error('Fehler beim Erstellen:', error);
-      toast.error('Fehler beim Erstellen des Anschreibens');
+      toast.error('Fehler beim Erstellen des Anschreibens', {
+        duration: 4000,
+        position: 'bottom-left',
+        style: {
+          background: '#1a1a1a',
+          color: '#fff',
+        },
+      });
+      // Entferne temporäre Card bei Fehler
+      setCoverletters(prevCoverletters => prevCoverletters.filter(coverletter => coverletter.id !== `temp-${Date.now()}`));
+      setProcessingCoverletters(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(`temp-${Date.now()}`);
+        return newSet;
+      });
     } finally {
       setIsUploading(false);
     }
@@ -318,88 +382,100 @@ export default function CoverletterListPage() {
   }
 
   return (
-    <LayoutMain>
-      <div className="space-y-6">
-        <div className="sm:flex sm:items-center">
-          <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-base-content">Meine Lebensläufe</h1>
-            <p className="mt-2 text-sm text-base-content/80">
-              Verwalten Sie Ihre Lebensläufe und optimieren Sie sie für Ihre Bewerbungen.
-            </p>
-            {isStructuring && (
-              <p className="mt-2 text-sm text-warning">
-                Lebensläufe werden strukturiert... Dies kann einige Minuten dauern.
-              </p>
-            )}
-          </div>
-          <div className="mt-4 sm:ml-16 sm:mt-0">
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="btn btn-primary"
+    <div className="min-h-screen bg-gray-50">
+      <LayoutMain>
+          <motion.main 
+            className="flex flex-col gap-8"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
+            <motion.div 
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+              variants={fadeInUp}
             >
-              Anschreiben erstellen
-            </button>
-          </div>
-        </div>
-
-        <div className="overflow-hidden bg-base-200 shadow sm:rounded-lg">
-          <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium leading-6 text-base-content">
-              Neues Anschreiben erstellen
-            </h3>
-            <div className="mt-2 max-w-xl text-sm text-base-content/80">
-              <p>Erstellen Sie ein neues Anschreiben oder laden Sie einen bestehenden Lebenslauf hoch.</p>
-            </div>
-            <div className="mt-5">
-              <FileUpload onUpload={handleFileUpload} disabled={isUploading} />
-            </div>
-          </div>
-        </div>
-
-        <motion.div 
-          className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-        >
-          <AnimatePresence>
-            {coverletters.length > 0 ? (
-              coverletters
-                .filter(coverletter => {
-                  const coverletterId = coverletter._id || coverletter.id;
-                  return coverletterId && !deletingCoverletters.has(coverletterId);
-                })
-                .map((coverletter) => (
-                  <motion.div 
-                    key={`coverletter-${coverletter._id || coverletter.id}`}
-                    variants={listItem}
-                    layout
-                  >
-                    <CardCoverletter
-                      coverletter={coverletter}
-                      onDelete={handleDelete}
-                    />
-                  </motion.div>
-                ))
-            ) : (
-              <motion.div 
-                className="col-span-full text-center"
-                variants={listItem}
+              <motion.h1 
+                className="text-3xl font-bold text-slate-700"
+                variants={fadeIn}
               >
-                <p>Keine Lebensläufe vorhanden</p>
+                Meine Anschreiben
+              </motion.h1>
+              
+              <motion.div 
+                className="flex gap-4"
+                variants={fadeIn}
+                transition={{ delay: 0.2 }}
+              >
+                <button
+                  onClick={() => setIsUploadSectionVisible(!isUploadSectionVisible)}
+                  className="btn btn-primary"
+                >
+                  {isUploadSectionVisible ? 'Abbrechen' : 'Anschreiben hochladen'}
+                </button>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="btn btn-secondary"
+                >
+                  Anschreiben erstellen
+                </button>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
+            </motion.div>
 
-      <CreateCoverletterModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={fetchCoverletters}
-      />
+            <motion.h3 
+              className="text-xl mb-8 text-slate-400"
+              variants={fadeIn}
+              transition={{ delay: 0.12 }}
+            >
+              Hier verwaltest du deine Anschreiben. Sie werden strukturiert und später mit deinem Lebenslauf auf deine künftige Stelle angepasst und optimiert.
+            </motion.h3>
 
-      {isModalOpen && selectedCoverletterId && (
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={staggerContainer}
+              initial="initial"
+              animate="animate"
+            >
+              {coverletters.map((coverletter, index) => (
+                <motion.div
+                  key={coverletter.id || coverletter._id}
+                  variants={fadeInUp}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <CardCoverletter
+                    coverletter={coverletter}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    processingCoverletters={processingCoverletters}
+                    deletingCoverletters={deletingCoverletters}
+                    onStartDelete={handleStartDelete}
+                    onCancelDelete={handleCancelDelete}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <AnimatePresence>
+              {isUploadSectionVisible && (
+                <ModalFileUpload
+                  isOpen={isUploadSectionVisible}
+                  onClose={() => setIsUploadSectionVisible(false)}
+                  onUpload={handleFileUpload}
+                  disabled={isUploading}
+                />
+              )}
+            </AnimatePresence>
+          </motion.main>
+      </LayoutMain>
+
+      {isCreateModalOpen && (
+        <CreateCoverletterModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={fetchCoverletters}
+        />
+      )}
+
+      {selectedCoverletterId && (
         <ModalEditCoverletter
           isOpen={isModalOpen}
           onClose={handleModalClose}
@@ -407,6 +483,6 @@ export default function CoverletterListPage() {
           onSave={handleCoverletterUpdate}
         />
       )}
-    </LayoutMain>
+    </div>
   );
 } 

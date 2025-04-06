@@ -252,21 +252,16 @@ ${formData.closing.signature}
                 <h3 className="text-lg font-semibold leading-6 text-gray-900">
                   {t('wizard.title')}
                 </h3>
-                <div className="mt-4">
+
+                <div className="mt-6">
                   {renderStep()}
                 </div>
+
                 <div className="mt-6 flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={onClose}
-                  >
-                    {t('wizard.buttons.cancel')}
-                  </button>
                   {currentStep > 1 && (
                     <button
                       type="button"
-                      className="btn btn-outline"
+                      className="btn btn-ghost"
                       onClick={handleBack}
                     >
                       {t('wizard.buttons.back')}
@@ -286,7 +281,7 @@ ${formData.closing.signature}
                       className="btn btn-primary"
                       onClick={handleSubmit}
                     >
-                      {t('wizard.buttons.finish')}
+                      {t('wizard.buttons.submit')}
                     </button>
                   )}
                 </div>

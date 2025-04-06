@@ -26,7 +26,6 @@ router = APIRouter()
 client = OpenAI(api_key=os.getenv("RESUME_OPENAI_API_KEY"))
 
 
-client = OpenAI(api_key=os.getenv("RESUME_OPENAI_API_KEY"))
 
 @router.get("/count")
 async def count_coverletters(user_id: str = Query(..., description="User ID to count coverletters for")):

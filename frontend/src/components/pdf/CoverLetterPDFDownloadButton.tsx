@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import CoverLetterPDF from './CoverLetterPDF';
+import CoverLetterPDF from '@/components/pdf/CoverLetterPDF';
 import { CoverLetter } from '@/types/api';
 
 interface CoverLetterPDFDownloadButtonProps {

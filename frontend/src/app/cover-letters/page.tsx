@@ -7,8 +7,8 @@ import { useTranslation } from '@/lib/i18n/client'
 import { coverLetterApi } from '@/lib/api'
 import { CoverLetter } from '@/types/api'
 import { showErrorToast } from '@/lib/toast/utils'
-import ButtonCreateCoverLetter from '@/components/ButtonCreateCoverLetter'
-import CardCoverLetter from '@/components/CardCoverLetter'
+import ButtonCreateCoverLetter from '@/components/common/buttons/ButtonCreateCoverLetter'
+import CardCoverLetter from '@/components/coverletter/CardCoverletter'
 
 export default function CoverLettersPage() {
   const { t } = useTranslation('cover-letters')

@@ -7,7 +7,7 @@ import { resumeApi } from '@/lib/api';
 import { Resume, ResumeAnalysis } from '@/types/api';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
-import { ResumeAnalysisResults } from '@/components/ResumeAnalysisResults';
+import { ResumeAnalysisResults } from '@/components/analysis/ResumeAnalysisResults';
 
 export default function AnalyzeResumePage({ params }: { params: { id: string } }) {
   const { data: session } = useSession();

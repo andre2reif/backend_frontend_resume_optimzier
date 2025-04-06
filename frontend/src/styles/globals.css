@@ -1,0 +1,12 @@
+/* Globale Styles für den Lösch-Button */
+.btn-delete {
+  @apply bg-gray-200 text-red-500 hover:bg-gray-300 transition-colors duration-200;
+}
+
+.btn-delete svg {
+  @apply text-red-500;
+}
+
+.btn-delete:hover svg {
+  @apply text-red-600;
+} 

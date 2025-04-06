@@ -18,8 +18,8 @@ db_coverletter = client_db["coverletter_db"]
 collection_coverletter = db_coverletter["coverLetter"]
 
 # Collections für jobdescription
-db_jobdesc = client_db["jobdescription_db"]
-collection_jobdesc = db_jobdesc["jobdescriptions"]
+db_jobdesc = client_db["jobposting_db"]
+collection_jobdesc = db_jobdesc["jobPostings"]
 
 # Collection für die Analyse
 db_analysis = client_db["analysis_db"]

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Navigation from '@/components/Navigation';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { signOut } from 'next-auth/react';
 
@@ -25,11 +24,8 @@ export default function LayoutMain({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="flex min-h-screen flex-col bg-base-100">
-      <Navigation />
-     
-
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+        <div className="mx-auto max-w-7xl px-6 py-32 lg:px-8">
           {children}
         </div>
       </main>

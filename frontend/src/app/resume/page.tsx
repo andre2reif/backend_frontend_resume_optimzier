@@ -3,18 +3,40 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 import Link from 'next/link';
 import { resumeApi } from '@/lib/api/resume';
 import { documentApi } from '@/lib/api/document';
 import { Resume, ApiResponse } from '@/types/api';
 import toast from 'react-hot-toast';
-import FileUpload from '@/components/FileUpload';
+import FileUpload from '@/components/upload/FileUpload';
 import LayoutMain from '@/components/layout/LayoutMain';
 import CreateResumeModal from '@/components/resume/CreateResumeModal';
 import { structureMultipleDocuments } from '@/lib/services/structureService';
 import ModalEditResume from '@/components/resume/ModalEditResume';
-import CardResume from '@/components/CardResume';
+import CardResume from '@/components/resume/CardResume';
+import UploadResumeModal from '@/components/resume/UploadResumeModal';
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5, ease: "easeOut" }
+};
+
+const fadeIn = {
+  initial: { opacity: 0, y: 5 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.3, ease: "easeOut" }
+};
+
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 export default function ResumeListPage() {
   const { data: session, status } = useSession();
@@ -29,7 +51,7 @@ export default function ResumeListPage() {
   const [processingResumes, setProcessingResumes] = useState<Set<string>>(new Set());
   const [deletingResumes, setDeletingResumes] = useState<Set<string>>(new Set());
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isUploadSectionVisible, setIsUploadSectionVisible] = useState(false);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const fetchResumes = useCallback(async () => {
     try {
@@ -148,7 +170,7 @@ export default function ResumeListPage() {
           return newSet;
         });
         toast.success('Lebenslauf erfolgreich erstellt');
-        setIsUploadSectionVisible(false);
+        setIsUploadModalOpen(false);
         
         // Starte Strukturierung für das neue Dokument
         if (response.data.status === 'unstructured') {
@@ -181,13 +203,16 @@ export default function ResumeListPage() {
           });
         }
       } else {
-        throw new Error('Fehler beim Erstellen');
+        throw new Error('Keine Daten vom Server erhalten');
       }
     } catch (error: any) {
-      console.error('Fehler beim Erstellen:', error);
-      toast.error(error.message || 'Fehler beim Erstellen des Lebenslaufs');
+      console.error('Fehler beim Hochladen:', error);
+      toast.error(error.message || 'Fehler beim Hochladen des Lebenslaufs');
+      
       // Entferne temporäre Card bei Fehler
-      setResumes(prevResumes => prevResumes.filter(resume => resume.id !== `temp-${Date.now()}`));
+      setResumes(prevResumes => 
+        prevResumes.filter(resume => resume.id !== `temp-${Date.now()}`)
+      );
       setProcessingResumes(prev => {
         const newSet = new Set(prev);
         newSet.delete(`temp-${Date.now()}`);
@@ -325,93 +350,110 @@ export default function ResumeListPage() {
   }
 
   return (
-    <LayoutMain>
-        <div className="sm:flex sm:items-center">
-          <div className="sm:flex-auto">
-            <h1 className="text-2xl font-semibold text-base-content">Meine Lebensläufe</h1>
-            <p className="mt-2 text-sm text-base-content/80">
-              Verwalten Sie Ihre Lebensläufe und optimieren Sie sie für Ihre Bewerbungen.
-            </p>
-            {isStructuring && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-warning">
-                <div className="loading loading-spinner loading-sm"></div>
-                <span>Lebensläufe werden strukturiert... Dies kann einige Minuten dauern.</span>
-              </div>
-            )}
-          </div>
-          <div className="mt-4 sm:ml-16 sm:mt-0 flex gap-2">
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="btn btn-primary"
-              disabled={isLoading}
+    <div className="min-h-screen bg-gray-50">
+      <LayoutMain>
+        <motion.main 
+          className=""
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+         
+            <motion.div 
+              className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+              variants={fadeInUp}
             >
-              Neuer Lebenslauf
-            </button>
-            <button
-              onClick={() => setIsUploadSectionVisible(true)}
-              className="btn btn-secondary"
-              disabled={isLoading}
+              <motion.h1 
+                className="text-3xl font-bold text-slate-700"
+                variants={fadeIn}
+              >
+                Meine Lebensläufe
+              </motion.h1>
+              
+              <motion.div 
+                className="flex gap-4"
+                variants={fadeIn}
+                transition={{ delay: 0.2 }}
+              >
+                <button
+                  onClick={() => setIsUploadModalOpen(!isUploadModalOpen)}
+                  className="btn btn-primary"
+                >
+                  {isUploadModalOpen ? 'Abbrechen' : 'Lebenslauf hochladen'}
+                </button>
+                <button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  className="btn btn-secondary"
+                >
+                  Lebenslauf erstellen
+                </button>
+              </motion.div>
+              
+            </motion.div>
+            <motion.h3 
+          className="text-xl mb-8 text-slate-400 py-8"
+          variants={fadeIn}
+          transition={{ delay: 0.12 }}
+        >
+          Hier verwaltetest du deine Lebensläufe. Sie werden strukturiert. Und später mit deinem Anschreiben auf deine künfitge Stelle anzupassen und zu optimieren.
+          </motion.h3>
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              variants={staggerContainer}
             >
-              Lebenslauf hochladen
-            </button>
-          </div>
-        </div>
+              {resumes.map((resume, index) => (
+                <motion.div
+                  key={resume.id || resume._id}
+                  variants={fadeInUp}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <CardResume
+                    resume={resume}
+                    onDelete={handleDelete}
+                    onEdit={handleEdit}
+                    processingResumes={processingResumes}
+                    deletingResumes={deletingResumes}
+                    onStartDelete={handleStartDelete}
+                    onCancelDelete={handleCancelDelete}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
 
-        {/* Upload Modal */}
-        <dialog id="upload_modal" className={`modal ${isUploadSectionVisible ? 'modal-open' : ''}`} onClick={(e) => {
-          if (e.target === e.currentTarget) {
-            setIsUploadSectionVisible(false);
-          }
-        }}>
-          <div className="modal-box">
-            <h3 className="text-lg font-medium leading-6 text-base-content">
-              Neuen Lebenslauf hochladen
-            </h3>
-            <div className="mt-2 max-w-xl text-sm text-base-content/80">
-              <p>Laden Sie einen bestehenden Lebenslauf hoch oder erstellen Sie einen neuen.</p>
-            </div>
-            <div className="mt-5">
-              <FileUpload onUpload={handleFileUpload} disabled={isUploading} />
-            </div>
-          </div>
-          
-        </dialog>
-
-        {isLoading && resumes.length === 0 ? (
-          <div className="flex justify-center py-8">
-            <div className="loading loading-spinner loading-lg"></div>
-          </div>
-        ) : (
-          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-            {resumes.length > 0 ? (
-              resumes.map((resume) => (
-                <CardResume
-                  key={resume._id || resume.id}
-                  resume={resume}
-                  processingResumes={processingResumes}
-                  deletingResumes={deletingResumes}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onStartDelete={handleStartDelete}
-                  onCancelDelete={handleCancelDelete}
+            {isUploadModalOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mt-8"
+              >
+                <FileUpload
+                  onUpload={handleFileUpload}
+                  disabled={isUploading}
+                  accept=".pdf,.doc,.docx,.txt"
                 />
-              ))
-            ) : (
-              <div key="empty" className="col-span-full text-center">
-                <p>Keine Lebensläufe vorhanden</p>
-              </div>
+              </motion.div>
             )}
-          </div>
-        )}
-      
+          
+        </motion.main>
+      </LayoutMain>
 
-      <CreateResumeModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={fetchResumes}
+      {isCreateModalOpen && (
+        <CreateResumeModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSuccess={fetchResumes}
+        />
+      )}
+
+      <UploadResumeModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleFileUpload}
+        isUploading={isUploading}
       />
 
-      {isModalOpen && selectedResumeId && (
+      {selectedResumeId && (
         <ModalEditResume
           isOpen={isModalOpen}
           onClose={handleModalClose}
@@ -419,6 +461,6 @@ export default function ResumeListPage() {
           onSave={handleResumeUpdate}
         />
       )}
-    </LayoutMain>
+    </div>
   );
 } 

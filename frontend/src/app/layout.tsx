@@ -1,7 +1,8 @@
 import { Inter } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { getServerSession } from 'next-auth';
-import SessionProvider from '@/components/SessionProvider';
+import SessionProvider from '@/components/layout/SessionProvider';
+import Navigation from '@/components/Navigation';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -22,6 +23,7 @@ export default async function RootLayout({
     <html lang="de" data-theme="light">
       <body className={inter.className}>
         <SessionProvider session={session}>
+          <Navigation />
           <main className="min-h-screen">
             <Toaster 
               position="bottom-left"

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { API_BASE_URL } from '@/config/api';
-import Navigation from '@/components/Navigation';
 import { motion } from 'framer-motion';
 
 interface DashboardStats {
@@ -104,7 +103,6 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation />
       <motion.main 
         className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32"
         variants={staggerContainer}

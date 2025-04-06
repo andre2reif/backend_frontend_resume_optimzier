@@ -17,7 +17,9 @@ export interface Resume {
     career?: Array<{
       position: string;
       company: string;
-      time_period: string;
+      start_date: string;
+      end_date: string | null;
+      is_current: boolean;
       tasks: string[];
       achievements: string[];
     }>;
@@ -100,16 +102,43 @@ export interface StructuredCoverLetter {
 }
 
 export interface CoverLetter {
-  _id: string;
-  id: string;
+  id?: string;
+  _id?: string;
   title: string;
-  rawText: string;
-  status: 'draft' | 'structured_complete' | 'optimized' | 'unstructured';
-  optimized_status?: 'pending' | 'completed' | 'failed';
+  content: string;
+  status: 'draft' | 'structured_complete' | 'optimized' | 'unstructured' | 'processing';
   createdAt: string;
   updatedAt: string;
-  structured_coverletter?: StructuredCoverLetter;
-  optimized_coverletter?: StructuredCoverLetter;
+  userId: string;
+  structured_coverletter?: {
+    cover_letter: {
+      sender: {
+        name: string;
+        address: string;
+        phone: string;
+        email: string;
+      };
+      recipient: {
+        name: string;
+        company: string;
+        address: string;
+      };
+      date: string;
+      subject: string;
+      reference: string;
+      salutation: string;
+      paragraphs: {
+        introduction: string;
+        motivation: string;
+        experience_summary: string;
+        company_alignment: string;
+        added_value: string;
+        salary_expectation: string;
+        closing: string;
+        signature: string;
+      };
+    };
+  };
 }
 
 export interface UpdateCoverletterData {
@@ -118,8 +147,7 @@ export interface UpdateCoverletterData {
   language?: string;
   status?: CoverLetter['status'];
   structured_coverletter?: CoverLetter['structured_coverletter'];
-  optimized_coverletter?: CoverLetter['optimized_coverletter'];
-  optimized_status?: CoverLetter['optimized_status'];
+  optimized_coverletter?: StructuredCoverLetter;
   user_id?: string;
 }
 
